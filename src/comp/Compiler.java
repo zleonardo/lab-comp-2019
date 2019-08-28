@@ -30,7 +30,7 @@ public class Compiler {
 		program = program(compilationErrorList);
 		return program;
 	}
-
+	// program := {annot} classDec { { annot } classDec }
 	private Program program(ArrayList<CompilationError> compilationErrorList) {
 		ArrayList<MetaobjectAnnotation> metaobjectCallList = new ArrayList<>();
 		ArrayList<TypeCianetoClass> CianetoClassList = new ArrayList<>();
@@ -85,6 +85,7 @@ public class Compiler {
 
 	 */
 	@SuppressWarnings("incomplete-switch")
+	// annot := "@" id [ "(" { annotParam } ")" ]
 	private void metaobjectAnnotation(ArrayList<MetaobjectAnnotation> metaobjectAnnotationList) {
 		String name = lexer.getMetaobjectName();
 		int lineNumber = lexer.getLineNumber();
@@ -158,6 +159,7 @@ public class Compiler {
 		if ( getNextToken ) lexer.nextToken();
 	}
 
+	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList
 	private void classDec() {
 		if ( lexer.token == Token.ID && lexer.getStringValue().equals("open") ) {
 			// open class
@@ -184,9 +186,11 @@ public class Compiler {
 
 	}
 
+	// memberList := { [ Qualifier ] Member }
 	private void memberList() {
 		while ( true ) {
 			qualifier();
+			// member := fieldDec | methodDec
 			if ( lexer.token == Token.VAR ) {
 				fieldDec();
 			}
@@ -214,6 +218,8 @@ public class Compiler {
 		}
 	}
 
+	// methodDec := "func" IdColon FormalParamDec [ "->" Type ] "{" StatementList"}" | 
+	//				"func" Id [ "->" Type ] "{" StatementList"}"
 	private void methodDec() {
 		lexer.nextToken();
 		if ( lexer.token == Token.ID ) {
@@ -244,7 +250,23 @@ public class Compiler {
 		next();
 
 	}
+	
+	// formalParamDec := ParamDec {"," ParamDec }
+	private void formalParamDec() {
+		
+	}
+	
+	// paramDec := Type Id
+	private void paramDec() {
+		
+	}
+	
+	// compStatement := "{" { Statement } "}"
+	private void compStatement() {
+		
+	}
 
+	// statementList := { Statement }
 	private void statementList() {
 		  // only '}' is necessary in this test
 		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
@@ -252,9 +274,17 @@ public class Compiler {
 		}
 	}
 
+	
+/* statement := AssignExpr ";" | IfStat | WhileStat | ReturnStat ";" |
+                WriteStat ";" | "break" ";" | ";" |
+                RepeatStat ";" | LocalDec ";" |
+                AssertStat ";" */
 	private void statement() {
 		boolean checkSemiColon = true;
 		switch ( lexer.token ) {
+		case ASSIGN:
+			assignExpr();
+			break;
 		case IF:
 			ifStat();
 			checkSemiColon = false;
@@ -294,7 +324,13 @@ public class Compiler {
 			check(Token.SEMICOLON, "';' expected");
 		}
 	}
+	
+	// assignExpr := Expr [ "=" Expr]
+	private void assignExpr() {
+		
+	}
 
+	// localDec := "var" Type IdList [ "=" Expr ]
 	private void localDec() {
 		next();
 		type();
@@ -315,7 +351,13 @@ public class Compiler {
 		}
 
 	}
+	
+	// idList := Id { "," Id } 
+	private void idList() {
+		
+	}
 
+	// repeatStat := "repeat" statementList "until" expr
 	private void repeatStat() {
 		next();
 		while ( lexer.token != Token.UNTIL && lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
@@ -324,16 +366,19 @@ public class Compiler {
 		check(Token.UNTIL, "missing keyword 'until'");
 	}
 
+	// breakStat := "break"
 	private void breakStat() {
 		next();
 
 	}
 
+	// returnStat := "return" expr
 	private void returnStat() {
 		next();
 		expr();
 	}
 
+	// whileStat := "while" expr "{" StatementList "}"
 	private void whileStat() {
 		next();
 		expr();
@@ -345,6 +390,7 @@ public class Compiler {
 		check(Token.RIGHTCURBRACKET, "missing '}' after 'while' body");
 	}
 
+	// ifStat := "if" expr "{" Statement "}" [ "else" "{" Statement "}" ]
 	private void ifStat() {
 		next();
 		expr();
@@ -368,6 +414,7 @@ public class Compiler {
 	/**
 
 	 */
+	// Writestat := "Out" "." ["print:" | "println:" ] expr
 	private void writeStat() {
 		next();
 		check(Token.DOT, "a '.' was expected after 'Out'");
@@ -376,11 +423,73 @@ public class Compiler {
 		String printName = lexer.getStringValue();
 		expr();
 	}
+	
+	// exprList := Expr { "," Expr }
+	private void exprList() {
+		
+	}
 
+	// expr := SimpleExpression [ Relation SimpleExpr ]
 	private void expr() {
 
 	}
+	
+	// simpleExpr := SumSubExpr { "++" SumSubExpr }
+	private void simpleExpr() {
+		
+	}
+	
+	// SumSubExpr := Term { lowOperator Term }
+	private void SumSubExpr() {
+		
+	}
+	
+	// term := signalFactor { highOperator signalFactor }
+	private void term() {
+		
+	}
+	
+	// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
+	private void relation() {
+		
+	}
+	
+	// readExpr() := "In" "." ( "readInt" | "readString" )
+	private void readExpr() {
+		
+	}
+	
+	// factor := basicValue | "(" Expr ")" | "!" factor | "nil | objectCreation | primaryExpr 
+	private void factor() {
+		
+	}
+	
+	// objectCreaton := Id "." "new"
+	private void objectCreation() {
+		
+	}
+	
+	
+/*  primaryExpr := "super" "." IdColon exprList | "super" "." Id |
+ 					Id | Id "." Id | Id "." IdColon ExprList | "self" |
+ 					"self" "." Id | "self" "." IdColon exprList | 
+ 					"self" "." Id "." IdColon exprList | "self" "." Id "." Id
+ */	
+	private void primaryExpr() {
+		
+	}
+	
+	// highOperator := "*" | "/" | "&&"
+	private void highOperator() {
+		
+	}
+	
+	// lowOperator := "+" | "-" | "||"
+	private void lowOperator() {
+			
+	}
 
+	// fieldDec := "var" Type IdList [ ";" ]
 	private void fieldDec() {
 		lexer.nextToken();
 		type();
@@ -401,8 +510,10 @@ public class Compiler {
 
 	}
 
+	// type := BasicType | Id
 	private void type() {
 		if ( lexer.token == Token.INT || lexer.token == Token.BOOLEAN || lexer.token == Token.STRING ) {
+			basicType();
 			next();
 		}
 		else if ( lexer.token == Token.ID ) {
@@ -413,8 +524,25 @@ public class Compiler {
 		}
 
 	}
+	
+	// basicType := "Int" | "Boolean" | "String"
+	private void basicType() {
+		
+	}
+	
+	// basicType := "IntValue" | "BooleanValue" | "StringValue"
+	private void basicValue() {
+			
+	}
+	
+	// booleanValue := "true" | "false"
+	private void booleanValue() {
+				
+	}
 
-
+	/* qualifier := "private" | "public" | "override" | "override" "public" |
+					"final" | "final" "public" | "final" "override" |
+					"final" "override" "public" | "shared" "private" | "shared" "public" */
 	private void qualifier() {
 		if ( lexer.token == Token.PRIVATE ) {
 			next();
@@ -446,6 +574,7 @@ public class Compiler {
 	 * uncomment it
 	 * implement the methods it calls
 	 */
+	// "assertStat" :=  expr "," StringValue
 	public Statement assertStat() {
 
 		lexer.nextToken();
@@ -460,15 +589,22 @@ public class Compiler {
 		}
 		String message = lexer.getLiteralStringValue();
 		lexer.nextToken();
-		if ( lexer.token == Token.SEMICOLON )
-			lexer.nextToken();
+		/*if ( lexer.token == Token.SEMICOLON )
+			lexer.nextToken();*/
 
 		return null;
 	}
 
+	// digit := 0 | ... | 9
+	private void digit() {
+		
+	}
 
-
-
+	// intValue := digit { digit }
+	private void intValue() {
+		
+	}
+	
 	private LiteralInt literalInt() {
 
 		LiteralInt e = null;
@@ -480,6 +616,17 @@ public class Compiler {
 		lexer.nextToken();
 		return new LiteralInt(value);
 	}
+	
+	// signalFactor := [ Signal ] factor
+	private void signalFactor() {
+		
+	}
+	
+	// signal := "+" | "-"
+	private void signal() {
+		
+	}
+	
 
 	private static boolean startExpr(Token token) {
 
