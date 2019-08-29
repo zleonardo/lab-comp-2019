@@ -87,6 +87,8 @@ public class Compiler {
 	@SuppressWarnings("incomplete-switch")
 	// annot := "@" id [ "(" { annotParam } ")" ]
 	private void metaobjectAnnotation(ArrayList<MetaobjectAnnotation> metaobjectAnnotationList) {
+		// já leu "@" no program
+		// name é o id
 		String name = lexer.getMetaobjectName();
 		int lineNumber = lexer.getLineNumber();
 		lexer.nextToken();
@@ -95,6 +97,7 @@ public class Compiler {
 		if ( lexer.token == Token.LEFTPAR ) {
 			// metaobject call with parameters
 			lexer.nextToken();
+			// { annotParam := IntV 
 			while ( lexer.token == Token.LITERALINT || lexer.token == Token.LITERALSTRING ||
 					lexer.token == Token.ID ) {
 				switch ( lexer.token ) {
@@ -159,10 +162,11 @@ public class Compiler {
 		if ( getNextToken ) lexer.nextToken();
 	}
 
-	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList
+	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList "end"
 	private void classDec() {
 		if ( lexer.token == Token.ID && lexer.getStringValue().equals("open") ) {
-			// open class
+			// open??
+			next();
 		}
 		if ( lexer.token != Token.CLASS ) error("'class' expected");
 		lexer.nextToken();
@@ -189,6 +193,7 @@ public class Compiler {
 	// memberList := { [ Qualifier ] Member }
 	private void memberList() {
 		while ( true ) {
+			// tem que verificar se no qualifier volta algo ou não pq é opcional
 			qualifier();
 			// member := fieldDec | methodDec
 			if ( lexer.token == Token.VAR ) {
@@ -221,11 +226,11 @@ public class Compiler {
 	// methodDec := "func" IdColon FormalParamDec [ "->" Type ] "{" StatementList"}" | 
 	//				"func" Id [ "->" Type ] "{" StatementList"}"
 	private void methodDec() {
+		// ja leu "func" no metodo memberList
 		lexer.nextToken();
 		if ( lexer.token == Token.ID ) {
 			// unary method
 			lexer.nextToken();
-
 		}
 		else if ( lexer.token == Token.IDCOLON ) {
 			// keyword method. It has parameters
@@ -253,22 +258,50 @@ public class Compiler {
 	
 	// formalParamDec := ParamDec {"," ParamDec }
 	private void formalParamDec() {
-		
+		paramDec();
+
+		while(lexer.token == Token.COMMA){
+			// lê a ","
+			next();
+			paramDec();
+		}
 	}
 	
 	// paramDec := Type Id
 	private void paramDec() {
-		
+		Type();
+
+		if(lexer.token != Token.ID){
+			error("Id was expected");
+		}
 	}
 	
+	// ESSA GRAMATICA NAO É CHAMADA POR NENHUMA OUTRA??
 	// compStatement := "{" { Statement } "}"
 	private void compStatement() {
-		
+
+		if (lexer.token != Token.LEFTCURBRACKET){
+			error("'{' was expected");
+		}
+		next();
+
+		// NAO SEI SE TA CERTO PQ TE O DEFAULT NO STATEMENT QUE PODE RECEBER OUTRAS COISAS
+		while (lexer.token == Token.IF || lexer.token == Token.WHILE || lexer.token == Token.RETURN || 
+			   lexer.token == Token.BREAK || lexer.token == Token.REPEAT || lexer.token == Token.VAR ||
+			   lexer.token == Token.ASSERT ||){
+			Statement();
+		}
+
+		if (lexer.token != Token.RIGHTCURBRACKET){
+			error("'}' was expected");
+		}
+		next();
 	}
 
 	// statementList := { Statement }
 	private void statementList() {
 		  // only '}' is necessary in this test
+		// Nao entendi isso que o zé colocou aqui
 		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
 			statement();
 		}
@@ -327,14 +360,37 @@ public class Compiler {
 	
 	// assignExpr := Expr [ "=" Expr]
 	private void assignExpr() {
-		
+		expr();
+
+		if(lexer.token == Token.ASSIGN){
+			next();
+			expr();
+		}
 	}
 
 	// localDec := "var" Type IdList [ "=" Expr ]
 	private void localDec() {
+
+		if(lexer.token != Token.VAR){
+			error("'var' was expected");
+		}
+
 		next();
 		type();
+		idList();
+		
+		if ( lexer.token == Token.ASSIGN ) {
+			next();
+			// check if there is just one variable
+			expr();
+		}
+	}
+	
+	// idList := Id { "," Id } 
+	private void idList() {
+
 		check(Token.ID, "A variable name was expected");
+
 		while ( lexer.token == Token.ID ) {
 			next();
 			if ( lexer.token == Token.COMMA ) {
@@ -344,54 +400,53 @@ public class Compiler {
 				break;
 			}
 		}
-		if ( lexer.token == Token.ASSIGN ) {
-			next();
-			// check if there is just one variable
-			expr();
-		}
-
-	}
-	
-	// idList := Id { "," Id } 
-	private void idList() {
-		
 	}
 
 	// repeatStat := "repeat" statementList "until" expr
 	private void repeatStat() {
+		// ja leu "repeat" no statement
 		next();
+		// Esse while o zé colocou, mas nao sei ainda o porque
 		while ( lexer.token != Token.UNTIL && lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
-			statement();
+			statementList();
 		}
 		check(Token.UNTIL, "missing keyword 'until'");
+
+		expr();
 	}
 
 	// breakStat := "break"
 	private void breakStat() {
+		// ja leu o "break" no statement
 		next();
 
 	}
 
 	// returnStat := "return" expr
 	private void returnStat() {
+		// ja leu o "return" no statement
 		next();
 		expr();
 	}
 
 	// whileStat := "while" expr "{" StatementList "}"
 	private void whileStat() {
+		// ja leu "while" no metodo statement
 		next();
 		expr();
 		check(Token.LEFTCURBRACKET, "missing '{' after the 'while' expression");
 		next();
 		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
-			statement();
+			statementList();
 		}
 		check(Token.RIGHTCURBRACKET, "missing '}' after 'while' body");
+
+		next();
 	}
 
 	// ifStat := "if" expr "{" Statement "}" [ "else" "{" Statement "}" ]
 	private void ifStat() {
+		// ja leu o "if" no statement
 		next();
 		expr();
 		check(Token.LEFTCURBRACKET, "'{' expected after the 'if' expression");
@@ -409,16 +464,19 @@ public class Compiler {
 			}
 			check(Token.RIGHTCURBRACKET, "'}' was expected");
 		}
+		next();
 	}
 
-	/**
-
-	 */
 	// Writestat := "Out" "." ["print:" | "println:" ] expr
 	private void writeStat() {
+		// ja leu "Out" no statement
 		next();
 		check(Token.DOT, "a '.' was expected after 'Out'");
 		next();
+		// o zé colocou esse check, mas pela gramatica é opcional?. Então teria que ser:
+		/* if(lexer.token == Token.IDCOLON){
+			String printName = lexer.getStringValue();
+			} */
 		check(Token.IDCOLON, "'print:' or 'println:' was expected after 'Out.'");
 		String printName = lexer.getStringValue();
 		expr();
@@ -426,49 +484,153 @@ public class Compiler {
 	
 	// exprList := Expr { "," Expr }
 	private void exprList() {
-		
+
+		int flag;
+
+		do{
+			expr();
+
+			if(lexer.token == Token.COMMA){
+				next();
+				flag = 1;
+			}
+			else{
+				flag = 0
+			}
+		}while(flag);
 	}
 
 	// expr := SimpleExpression [ Relation SimpleExpr ]
 	private void expr() {
+		simpleExpr();
 
+		String relation = relation();
+
+		if(relation != "") {
+			relation();
+			simpleExpr();
+		}
 	}
 	
 	// simpleExpr := SumSubExpr { "++" SumSubExpr }
 	private void simpleExpr() {
-		
+		SumSubExpr();
+
+		while(lexer.token == Token.PLUSPLUS){
+			next();
+			SumSubExpr();
+		}
 	}
 	
 	// SumSubExpr := Term { lowOperator Term }
 	private void SumSubExpr() {
-		
+		term();
+
+		String low = lowOperator();
+
+		while (low != ""){
+			next();
+			term();
+		}
 	}
 	
 	// term := signalFactor { highOperator signalFactor }
 	private void term() {
-		
+		signalFactor();
+
+		String high = highOperator();
+
+		while (high != ""){
+			next();
+			signalFactor();
+		}
 	}
 	
 	// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
 	private void relation() {
-		
+		switch(lexer.token){
+			case EQ:
+				return "==";
+				break;
+			case LT:
+				return "<";
+				break;
+			case GT:
+				return ">";
+				break;
+			case LE:
+				return "<=";
+				break;
+			case GE:
+				return ">=";
+				break;
+			case NEQ:
+				return ">";
+				break;
+			default:
+				return "";
+		}
 	}
 	
-	// readExpr() := "In" "." ( "readInt" | "readString" )
+	// readExpr() := "In" "." [ "readInt" | "readString" ]
 	private void readExpr() {
-		
+		if(lexer.token != Token.IN){
+			error("'In' was expected");
+		}
+		check(Token.DOT, "'.' is missing after 'In'");
+
+		if(lexer.token == Token.READINT){
+			// voltar int
+			next();
+		}
+		else if(lexer.token == Token.READSTRING){
+			//voltar string
+			next();
+		}
 	}
 	
 	// factor := basicValue | "(" Expr ")" | "!" factor | "nil | objectCreation | primaryExpr 
 	private void factor() {
-		
+		switch (lexer.token) {
+            case INT:
+                basicValue();
+                break;
+            case STRING:
+                basicValue();
+                break;
+            case TRUE:
+                basicValue();
+                break;
+            case FALSE:
+                basicValue();
+                break;
+            case LEFTPAR:
+                next();
+                expr();
+                check(Token.RIGHTPAR, "')' was expected");
+                next();
+                break;
+            case NOT:
+                next();
+                factor();
+                break;
+            case NULL:
+                next();
+                break;
+            case ID:
+            	objectCreation();
+            default:
+            	primaryExpr();
 	}
 	
 	// objectCreaton := Id "." "new"
 	private void objectCreation() {
-		
+			next();
+			check(Token.DOT, "'.' was expected after id");
+			next();
+			check(Token.NEW, "'new' was expected after '.'");
+			next();
 	}
-	
 	
 /*  primaryExpr := "super" "." IdColon exprList | "super" "." Id |
  					Id | Id "." Id | Id "." IdColon ExprList | "self" |
@@ -476,17 +638,104 @@ public class Compiler {
  					"self" "." Id "." IdColon exprList | "self" "." Id "." Id
  */	
 	private void primaryExpr() {
-		
+		if(lexer.token == Token.SUPER){
+			next();
+			check(Token.DOT, "'.' was expected after 'super'");
+			next();
+			if(lexer.token == Token.ID){
+
+			}
+			else if(lexer.token == Token.IDCOLON){
+				next();
+				exprList();
+			}
+			else{
+				error("Id or IdColon was expected");
+			}
+		}
+		else if(lexer.token == Token.ID){
+			next();
+			if(lexer.token == Token.DOT){
+				if(lexer.token == Token.ID){
+					
+				}
+				else if(lexer.token == Token.IDCOLON){
+					next();
+					exprList();
+				}
+				else{
+					error("Id or IdColon was expected");
+				}
+			}
+			else{
+				// é só id entao
+			}
+		}
+		else if(lexer.token == Token.SELF){
+			next();
+			if(lexer.token == Token.DOT){
+				if(lexer.token == Token.ID){
+					if(lexer.token == Token.DOT){
+						if(lexer.token == Token.ID){
+						}
+						else if(lexer.token == Token.IDCOLON){
+							next();
+							exprList();
+						}
+						else{
+							error("Id or IdColon was expected");
+						}
+					}
+					else{
+						// só id mesmo
+					}
+				}
+				else if(lexer.token == Token.IDCOLON){
+					next();
+					exprList();
+				}
+				else{
+					error("Id or IdColon was expected");
+				}
+			}
+			else{
+				// é só self entao
+			}
+		}
 	}
 	
 	// highOperator := "*" | "/" | "&&"
-	private void highOperator() {
-		
+	private String highOperator() {
+		switch(lexer.token){
+			case MULT:
+				return "*";
+				break;
+			case DIV:
+				return "/";
+				break;
+			case AND:
+				return "&&";
+				break;
+			default:
+				return "";
+		}
 	}
 	
 	// lowOperator := "+" | "-" | "||"
-	private void lowOperator() {
-			
+	private String lowOperator() {
+		switch(lexer.token){
+			case PLUS:
+				return "+";
+				break;
+			case MINUS:
+				return "-";
+				break;
+			case OR:
+				return "||";
+				break;
+			default:
+				return "";
+		}
 	}
 
 	// fieldDec := "var" Type IdList [ ";" ]
@@ -506,6 +755,9 @@ public class Compiler {
 					break;
 				}
 			}
+		}
+		if(lexer.token == Token.SEMICOLON){
+			next();
 		}
 
 	}
@@ -527,17 +779,17 @@ public class Compiler {
 	
 	// basicType := "Int" | "Boolean" | "String"
 	private void basicType() {
-		
+		next();
 	}
 	
 	// basicType := "IntValue" | "BooleanValue" | "StringValue"
 	private void basicValue() {
-			
+		next();
 	}
 	
 	// booleanValue := "true" | "false"
 	private void booleanValue() {
-				
+		next();
 	}
 
 	/* qualifier := "private" | "public" | "override" | "override" "public" |
@@ -566,6 +818,14 @@ public class Compiler {
 				if ( lexer.token == Token.PUBLIC ) {
 					next();
 				}
+			}
+		}
+		else if(lexer.token == Token.SHARED) {
+			if (lexer.token == Token.PUBLIC) {
+				next();
+			}
+			else if (lexer.token == Token.PRIVATE) {
+				next();
 			}
 		}
 	}
@@ -597,12 +857,12 @@ public class Compiler {
 
 	// digit := 0 | ... | 9
 	private void digit() {
-		
+		//??
 	}
 
 	// intValue := digit { digit }
 	private void intValue() {
-		
+		//??
 	}
 	
 	private LiteralInt literalInt() {
@@ -619,12 +879,22 @@ public class Compiler {
 	
 	// signalFactor := [ Signal ] factor
 	private void signalFactor() {
-		
+		String signal = signal();
+		next();
+		factor();
 	}
 	
 	// signal := "+" | "-"
-	private void signal() {
-		
+	private String signal() {
+		if(lexer.token == Token.PLUS){
+			return "+";
+		}
+		else if(lexer.token == Token.MINUS){
+			return "-";
+		}
+		else{
+			return "";
+		}
 	}
 	
 
