@@ -45,7 +45,7 @@ public class Compiler {
 				}
 				classDec();
 			}
-			catch( CompilerError e) {
+			/*catch( CompilerError e) {
 				// if there was an exception, there is a compilation error
 				thereWasAnError = true;
 				while ( lexer.token != Token.CLASS && lexer.token != Token.EOF ) {
@@ -57,7 +57,13 @@ public class Compiler {
 						return program;
 					}
 				}
+			}*/
+
+			catch( CompilerError e) {
+		      // if there was an exception, there is a compilation error
+		      thereWasAnError = true;
 			}
+
 			catch ( RuntimeException e ) {
 				e.printStackTrace();
 				thereWasAnError = true;

@@ -1,8 +1,8 @@
-﻿/*
+/*
 Vitor Mesquita Fogaça
 vitor.fogaca@outlook.com
 */
-      
+
 class Teste
     var Int n;
 	
