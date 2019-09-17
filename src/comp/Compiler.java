@@ -294,7 +294,7 @@ public class Compiler {
 		// NAO SEI SE TA CERTO PQ TE O DEFAULT NO STATEMENT QUE PODE RECEBER OUTRAS COISAS
 		while (lexer.token == Token.IF || lexer.token == Token.WHILE || lexer.token == Token.RETURN || 
 			   lexer.token == Token.BREAK || lexer.token == Token.REPEAT || lexer.token == Token.VAR ||
-			   lexer.token == Token.ASSERT ||){
+			   lexer.token == Token.ASSERT){
 			Statement();
 		}
 
@@ -501,7 +501,7 @@ public class Compiler {
 				flag = 1;
 			}
 			else{
-				flag = 0
+				flag = 0;
 			}
 		}while(flag);
 	}
@@ -626,7 +626,8 @@ public class Compiler {
             case ID:
             	objectCreation();
             default:
-            	primaryExpr();
+				primaryExpr();
+		}
 	}
 	
 	// objectCreaton := Id "." "new"
