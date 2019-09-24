@@ -80,6 +80,20 @@ public class Compiler {
 		return program;
 	}
 
+	private void error(String msg) {
+		this.signalError.showError(msg);
+	}
+
+	private void next() {
+		lexer.nextToken();
+	}
+
+	private void check(Token shouldBe, String msg) {
+		if ( lexer.token != shouldBe ) {
+			error(msg);
+		}
+	}
+
 	/**  parses a metaobject annotation as <code>{@literal @}cep(...)</code> in <br>
      * <code>
      * {@literal @}cep(5, "'class' expected") <br>
@@ -174,26 +188,26 @@ public class Compiler {
 			// open??
 			next();
 		}
-		if ( lexer.token != Token.CLASS ) error("'class' expected");
-		lexer.nextToken();
-		if ( lexer.token != Token.ID )
-			error("Identifier expected");
-		String className = lexer.getStringValue();
-		lexer.nextToken();
-		if ( lexer.token == Token.EXTENDS ) {
-			lexer.nextToken();
-			if ( lexer.token != Token.ID )
-				error("Identifier expected");
-			String superclassName = lexer.getStringValue();
 
-			lexer.nextToken();
+		check(Token.CLASS, "'class' expected");
+		next();
+		
+		check(Token.ID, "Identifier expected");
+		String className = lexer.getStringValue();
+		next();
+
+		if ( lexer.token == Token.EXTENDS ) {
+			next();
+
+			check(Token.ID, "Identifier expected");
+			String superclassName = lexer.getStringValue();
+			next();
 		}
 
 		memberList();
-		if ( lexer.token != Token.END)
-			error("'end' expected");
-		lexer.nextToken();
 
+		check(Token.END, "'end' expected");
+		next();
 	}
 
 	// memberList := { [ Qualifier ] Member }
@@ -201,6 +215,7 @@ public class Compiler {
 		while ( true ) {
 			// tem que verificar se no qualifier volta algo ou não pq é opcional
 			qualifier();
+			
 			// member := fieldDec | methodDec
 			if ( lexer.token == Token.VAR ) {
 				fieldDec();
@@ -214,18 +229,41 @@ public class Compiler {
 		}
 	}
 
-	private void error(String msg) {
-		this.signalError.showError(msg);
-	}
-
-
-	private void next() {
-		lexer.nextToken();
-	}
-
-	private void check(Token shouldBe, String msg) {
-		if ( lexer.token != shouldBe ) {
-			error(msg);
+	/* qualifier := "private" | "public" | "override" | "override" "public" |
+	"final" | "final" "public" | "final" "override" |
+	"final" "override" "public" | "shared" "private" | "shared" "public" */
+	private void qualifier() {
+		if ( lexer.token == Token.PRIVATE ) {
+			next();
+		}
+		else if ( lexer.token == Token.PUBLIC ) {
+			next();
+		}
+		else if ( lexer.token == Token.OVERRIDE ) {
+			next();
+			if ( lexer.token == Token.PUBLIC ) {
+				next();
+			}
+		}
+		else if ( lexer.token == Token.FINAL ) {
+			next();
+			if ( lexer.token == Token.PUBLIC ) {
+				next();
+			}
+			else if ( lexer.token == Token.OVERRIDE ) {
+				next();
+				if ( lexer.token == Token.PUBLIC ) {
+					next();
+				}
+			}
+		}
+		else if(lexer.token == Token.SHARED) {
+			if (lexer.token == Token.PUBLIC) {
+				next();
+			}
+			else if (lexer.token == Token.PRIVATE) {
+				next();
+			}
 		}
 	}
 
@@ -233,33 +271,30 @@ public class Compiler {
 	//				"func" Id [ "->" Type ] "{" StatementList"}"
 	private void methodDec() {
 		// ja leu "func" no metodo memberList
-		lexer.nextToken();
+		next();
 		if ( lexer.token == Token.ID ) {
 			// unary method
-			lexer.nextToken();
+			next();
 		}
 		else if ( lexer.token == Token.IDCOLON ) {
 			// keyword method. It has parameters
-
+			formalParamDec();
+			//??
 		}
 		else {
 			error("An identifier or identifer: was expected after 'func'");
 		}
 		if ( lexer.token == Token.MINUS_GT ) {
 			// method declared a return type
-			lexer.nextToken();
+			next();
 			type();
 		}
-		if ( lexer.token != Token.LEFTCURBRACKET ) {
-			error("'{' expected");
-		}
-		next();
-		statementList();
-		if ( lexer.token != Token.RIGHTCURBRACKET ) {
-			error("'{' expected");
-		}
+		check(Token.LEFTCURBRACKET, "'{' expected");
 		next();
 
+		statementList();
+		check(Token.RIGHTCURBRACKET, "'}' expected");
+		next();
 	}
 	
 	// formalParamDec := ParamDec {"," ParamDec }
@@ -275,7 +310,7 @@ public class Compiler {
 	
 	// paramDec := Type Id
 	private void paramDec() {
-		Type();
+		type();
 
 		if(lexer.token != Token.ID){
 			error("Id was expected");
@@ -295,7 +330,7 @@ public class Compiler {
 		while (lexer.token == Token.IF || lexer.token == Token.WHILE || lexer.token == Token.RETURN || 
 			   lexer.token == Token.BREAK || lexer.token == Token.REPEAT || lexer.token == Token.VAR ||
 			   lexer.token == Token.ASSERT){
-			Statement();
+			statement();
 		}
 
 		if (lexer.token != Token.RIGHTCURBRACKET){
@@ -491,19 +526,14 @@ public class Compiler {
 	// exprList := Expr { "," Expr }
 	private void exprList() {
 
-		int flag;
+		boolean flag;
 
-		do{
+		expr();
+
+		while(lexer.token == Token.COMMA){
+			next();
 			expr();
-
-			if(lexer.token == Token.COMMA){
-				next();
-				flag = 1;
-			}
-			else{
-				flag = 0;
-			}
-		}while(flag);
+		}
 	}
 
 	// expr := SimpleExpression [ Relation SimpleExpr ]
@@ -553,26 +583,20 @@ public class Compiler {
 	}
 	
 	// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
-	private void relation() {
+	private String relation() {
 		switch(lexer.token){
 			case EQ:
 				return "==";
-				break;
 			case LT:
 				return "<";
-				break;
 			case GT:
 				return ">";
-				break;
 			case LE:
 				return "<=";
-				break;
 			case GE:
 				return ">=";
-				break;
 			case NEQ:
 				return ">";
-				break;
 			default:
 				return "";
 		}
@@ -716,13 +740,10 @@ public class Compiler {
 		switch(lexer.token){
 			case MULT:
 				return "*";
-				break;
 			case DIV:
 				return "/";
-				break;
 			case AND:
 				return "&&";
-				break;
 			default:
 				return "";
 		}
@@ -733,13 +754,10 @@ public class Compiler {
 		switch(lexer.token){
 			case PLUS:
 				return "+";
-				break;
 			case MINUS:
 				return "-";
-				break;
 			case OR:
 				return "||";
-				break;
 			default:
 				return "";
 		}
@@ -766,7 +784,6 @@ public class Compiler {
 		if(lexer.token == Token.SEMICOLON){
 			next();
 		}
-
 	}
 
 	// type := BasicType | Id
@@ -799,43 +816,6 @@ public class Compiler {
 		next();
 	}
 
-	/* qualifier := "private" | "public" | "override" | "override" "public" |
-					"final" | "final" "public" | "final" "override" |
-					"final" "override" "public" | "shared" "private" | "shared" "public" */
-	private void qualifier() {
-		if ( lexer.token == Token.PRIVATE ) {
-			next();
-		}
-		else if ( lexer.token == Token.PUBLIC ) {
-			next();
-		}
-		else if ( lexer.token == Token.OVERRIDE ) {
-			next();
-			if ( lexer.token == Token.PUBLIC ) {
-				next();
-			}
-		}
-		else if ( lexer.token == Token.FINAL ) {
-			next();
-			if ( lexer.token == Token.PUBLIC ) {
-				next();
-			}
-			else if ( lexer.token == Token.OVERRIDE ) {
-				next();
-				if ( lexer.token == Token.PUBLIC ) {
-					next();
-				}
-			}
-		}
-		else if(lexer.token == Token.SHARED) {
-			if (lexer.token == Token.PUBLIC) {
-				next();
-			}
-			else if (lexer.token == Token.PRIVATE) {
-				next();
-			}
-		}
-	}
 	/**
 	 * change this method to 'private'.
 	 * uncomment it
@@ -865,11 +845,13 @@ public class Compiler {
 	// digit := 0 | ... | 9
 	private void digit() {
 		//??
+		// se pa nao precisa disso aqui, so no lexer
 	}
 
 	// intValue := digit { digit }
 	private void intValue() {
 		//??
+		next();
 	}
 	
 	private LiteralInt literalInt() {
