@@ -69,6 +69,9 @@ public class Compiler {
 				thereWasAnError = true;
 			}
 
+		// VERIFICAR SE TEM UMA CLASSE 'PROGRAM' QUE É OBRIGATÓRIA
+			// VER ISSO NA PARTE SEMANTICA
+
 		}
 		if ( !thereWasAnError && lexer.token != Token.EOF ) {
 			try {
@@ -185,7 +188,7 @@ public class Compiler {
 	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList "end"
 	private void classDec() {
 		if ( lexer.token == Token.ID && lexer.getStringValue().equals("open") ) {
-			// open??
+			// DECLARA OPEN QUANDO UMA CLASSE É HERDADA DE OUTRA
 			next();
 		}
 
@@ -213,8 +216,9 @@ public class Compiler {
 	// memberList := { [ Qualifier ] Member }
 	private void memberList() {
 		while ( true ) {
+
 			// tem que verificar se no qualifier volta algo ou não pq é opcional
-			qualifier();
+			String quali = qualifier();
 			
 			// member := fieldDec | methodDec
 			if ( lexer.token == Token.VAR ) {
@@ -232,39 +236,50 @@ public class Compiler {
 	/* qualifier := "private" | "public" | "override" | "override" "public" |
 	"final" | "final" "public" | "final" "override" |
 	"final" "override" "public" | "shared" "private" | "shared" "public" */
-	private void qualifier() {
+	private String qualifier() {
 		if ( lexer.token == Token.PRIVATE ) {
 			next();
+			return "private";
 		}
 		else if ( lexer.token == Token.PUBLIC ) {
 			next();
+			return "public";
 		}
 		else if ( lexer.token == Token.OVERRIDE ) {
 			next();
 			if ( lexer.token == Token.PUBLIC ) {
 				next();
+				return "override public";
 			}
+			return "override";
 		}
 		else if ( lexer.token == Token.FINAL ) {
 			next();
 			if ( lexer.token == Token.PUBLIC ) {
 				next();
+				return "final public";
 			}
 			else if ( lexer.token == Token.OVERRIDE ) {
 				next();
 				if ( lexer.token == Token.PUBLIC ) {
 					next();
+					return "final override public";
 				}
+				return "final override";
 			}
+			return "final";
 		}
 		else if(lexer.token == Token.SHARED) {
 			if (lexer.token == Token.PUBLIC) {
 				next();
+				return "shared public"
 			}
 			else if (lexer.token == Token.PRIVATE) {
 				next();
+				return "shared private";
 			}
 		}
+		return "";
 	}
 
 	// methodDec := "func" IdColon FormalParamDec [ "->" Type ] "{" StatementList"}" | 
@@ -789,7 +804,7 @@ public class Compiler {
 	// type := BasicType | Id
 	private void type() {
 		if ( lexer.token == Token.INT || lexer.token == Token.BOOLEAN || lexer.token == Token.STRING ) {
-			basicType();
+			String type = basicType();
 			next();
 		}
 		else if ( lexer.token == Token.ID ) {
@@ -802,8 +817,17 @@ public class Compiler {
 	}
 	
 	// basicType := "Int" | "Boolean" | "String"
-	private void basicType() {
-		next();
+	private String basicType() {
+		if (lexer.token == Token.INT){
+			return "Int";
+		}
+		else if(lexer.token == Token.BOOLEAN){
+			return "Boolean";
+		}
+		else if(lexer.token == Token.STRING){
+			return "String";
+		}
+		return "";
 	}
 	
 	// basicType := "IntValue" | "BooleanValue" | "StringValue"
