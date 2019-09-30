@@ -13,10 +13,20 @@ public class TypeCianetoClass extends Type {
       return getName();
    }
 
+   public void setSuperClass(TypeCianetoClass superClass){
+      this.superclass = superClass;
+   }
+
+   public void setMemberList(MemberList memberList){
+      this.fieldList = memberList.getFieldList();
+      this.publicMethodList = memberList.getPublicMethodList();
+      this.privateMethodList = memberList.getPrivateMethodList();
+   }
+
    private String name;
    private TypeCianetoClass superclass;
-   // private FieldList fieldList;
-   // private MethodList publicMethodList, privateMethodList;
-   // métodos públicos get e set para obter e iniciar as variáveis acima,
-   // entre outros métodos
+   private FieldList fieldList;
+   private MethodList publicMethodList, privateMethodList;
+   // mï¿½todos pï¿½blicos get e set para obter e iniciar as variï¿½veis acima,
+   // entre outros mï¿½todos
 }

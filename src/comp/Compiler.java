@@ -3,11 +3,7 @@ package comp;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import ast.LiteralInt;
-import ast.MetaobjectAnnotation;
-import ast.Program;
-import ast.Statement;
-import ast.TypeCianetoClass;
+import ast.*;
 import lexer.Lexer;
 import lexer.Token;
 
@@ -34,8 +30,9 @@ public class Compiler {
 	private Program program(ArrayList<CompilationError> compilationErrorList) {
 		ArrayList<MetaobjectAnnotation> metaobjectCallList = new ArrayList<>();
 		ArrayList<TypeCianetoClass> CianetoClassList = new ArrayList<>();
-		Program program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);
+		Program program;
 		boolean thereWasAnError = false;
+
 		while ( lexer.token == Token.CLASS ||
 				(lexer.token == Token.ID && lexer.getStringValue().equals("open") ) ||
 				lexer.token == Token.ANNOT ) {
@@ -43,7 +40,8 @@ public class Compiler {
 				while ( lexer.token == Token.ANNOT ) {
 					metaobjectAnnotation(metaobjectCallList);
 				}
-				classDec();
+
+				CianetoClassList.add(classDec());
 			}
 			/*catch( CompilerError e) {
 				// if there was an exception, there is a compilation error
@@ -80,6 +78,7 @@ public class Compiler {
 			catch( CompilerError e) {
 			}
 		}
+		program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);
 		return program;
 	}
 
@@ -186,7 +185,9 @@ public class Compiler {
 	}
 
 	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList "end"
-	private void classDec() {
+	private TypeCianetoClass classDec() {
+		MemberList memberList = null;
+
 		if ( lexer.token == Token.ID && lexer.getStringValue().equals("open") ) {
 			// DECLARA OPEN QUANDO UMA CLASSE É HERDADA DE OUTRA
 			next();
@@ -196,7 +197,7 @@ public class Compiler {
 		next();
 		
 		check(Token.ID, "Identifier expected");
-		String className = lexer.getStringValue();
+		TypeCianetoClass classObj = new TypeCianetoClass(lexer.getStringValue());
 		next();
 
 		if ( lexer.token == Token.EXTENDS ) {
@@ -204,33 +205,46 @@ public class Compiler {
 
 			check(Token.ID, "Identifier expected");
 			String superclassName = lexer.getStringValue();
+			// falta buscar o objeto da super class, e adiciona-lo a classe
+			// classObj.setSuperClass(superClass);
 			next();
 		}
 
-		memberList();
+		memberList = memberList();
+		classObj.setMemberList(memberList);
 
 		check(Token.END, "'end' expected");
 		next();
+
+		return classObj;
 	}
 
 	// memberList := { [ Qualifier ] Member }
-	private void memberList() {
+	private MemberList memberList() {
+		MemberList memberList = new MemberList();
+		Method method;
+		
 		while ( true ) {
-
 			// tem que verificar se no qualifier volta algo ou não pq é opcional
-			String quali = qualifier();
+			// e colocar na ast
+			String qualifier = qualifier();
 			
 			// member := fieldDec | methodDec
 			if ( lexer.token == Token.VAR ) {
-				fieldDec();
+				memberList.addField(fieldDec());
 			}
 			else if ( lexer.token == Token.FUNC ) {
-				methodDec();
+				method = methodDec();
+				if (qualifier.contains("private"))
+					memberList.addPrivateMethod(method);
+				else if (qualifier.contains("public"))
+					memberList.addPublicMethod(method);
 			}
 			else {
 				break;
 			}
 		}
+		return memberList;
 	}
 
 	/* qualifier := "private" | "public" | "override" | "override" "public" |
@@ -272,21 +286,24 @@ public class Compiler {
 		else if(lexer.token == Token.SHARED) {
 			if (lexer.token == Token.PUBLIC) {
 				next();
-				return "shared public"
+				return "shared public";
 			}
 			else if (lexer.token == Token.PRIVATE) {
 				next();
 				return "shared private";
 			}
 		}
-		return "";
+		return null;
 	}
 
 	// methodDec := "func" IdColon FormalParamDec [ "->" Type ] "{" StatementList"}" | 
 	//				"func" Id [ "->" Type ] "{" StatementList"}"
-	private void methodDec() {
+	private Method methodDec() {
+		Method method = null;
+
 		// ja leu "func" no metodo memberList
 		next();
+
 		if ( lexer.token == Token.ID ) {
 			// unary method
 			next();
@@ -310,6 +327,8 @@ public class Compiler {
 		statementList();
 		check(Token.RIGHTCURBRACKET, "'}' expected");
 		next();
+
+		return method;
 	}
 	
 	// formalParamDec := ParamDec {"," ParamDec }
@@ -659,7 +678,7 @@ public class Compiler {
                 next();
                 factor();
                 break;
-            case NULL:
+            case NIL:
                 next();
                 break;
             case ID:
@@ -779,9 +798,12 @@ public class Compiler {
 	}
 
 	// fieldDec := "var" Type IdList [ ";" ]
-	private void fieldDec() {
-		lexer.nextToken();
+	private Field fieldDec() {
+		Field field = null;
+		next();
+
 		type();
+
 		if ( lexer.token != Token.ID ) {
 			this.error("A field name was expected");
 		}
@@ -799,6 +821,7 @@ public class Compiler {
 		if(lexer.token == Token.SEMICOLON){
 			next();
 		}
+		return field;
 	}
 
 	// type := BasicType | Id
@@ -813,7 +836,6 @@ public class Compiler {
 		else {
 			this.error("A type was expected");
 		}
-
 	}
 	
 	// basicType := "Int" | "Boolean" | "String"
@@ -909,16 +931,14 @@ public class Compiler {
 			return "";
 		}
 	}
-	
 
 	private static boolean startExpr(Token token) {
 
 		return token == Token.FALSE || token == Token.TRUE
 				|| token == Token.NOT || token == Token.SELF
 				|| token == Token.LITERALINT || token == Token.SUPER
-				|| token == Token.LEFTPAR || token == Token.NULL
+				|| token == Token.LEFTPAR || token == Token.NIL
 				|| token == Token.ID || token == Token.LITERALSTRING;
-
 	}
 
 	private SymbolTable		symbolTable;
