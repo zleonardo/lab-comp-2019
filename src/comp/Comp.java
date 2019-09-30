@@ -1,3 +1,8 @@
+/*
+	Nome: Vitor Pratali Camillo	 RA: 620181
+	Nome: Leonardo Zaccarias	 RA: 620491
+*/
+
 package comp;
 import java.io.BufferedReader;
 import java.io.File;
