@@ -12,7 +12,17 @@ public class Program {
 		this.compilationErrorList = compilationErrorList;
 	}
 
+	/**
+	the name of the main Java class when the
+	code is generated to Java. This name is equal
+	to the file name (without extension)
+	*/
+	private String mainJavaClassName;
 
+	public void setMainJavaClassName(String mainJavaClassName) {
+		this.mainJavaClassName = mainJavaClassName;
+	}
+	
 	public void genJava(PW pw) {
 	}
 
@@ -23,11 +33,9 @@ public class Program {
 		return classList;
 	}
 
-
 	public ArrayList<MetaobjectAnnotation> getMetaobjectCallList() {
 		return metaobjectCallList;
 	}
-	
 
 	public boolean hasCompilationErrors() {
 		return compilationErrorList != null && compilationErrorList.size() > 0 ;
@@ -36,12 +44,8 @@ public class Program {
 	public ArrayList<CompilationError> getCompilationErrorList() {
 		return compilationErrorList;
 	}
-
 	
 	private ArrayList<TypeCianetoClass> classList;
 	private ArrayList<MetaobjectAnnotation> metaobjectCallList;
-	
 	ArrayList<CompilationError> compilationErrorList;
-
-	
 }

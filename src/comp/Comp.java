@@ -833,6 +833,7 @@ public class Comp {
 					PrintWriter printWriter = new PrintWriter(fos, true) ) {
 				PW pw = new PW(printWriter);
 				try {
+					program.setMainJavaClassName(className);
 					program.genJava(pw);
 				}
 				catch( Throwable e ) {
