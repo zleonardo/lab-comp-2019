@@ -311,9 +311,13 @@ public class Compiler {
 
 		if ( lexer.token == Token.ID ) {
 			// unary method
+			method = new Method(lexer.getStringValue());
 			next();
 		}
 		else if ( lexer.token == Token.IDCOLON ) {
+			method = new Method(lexer.getStringValue());
+			next();
+
 			// keyword method. It has parameters
 			formalParamDec();
 			//??
@@ -337,23 +341,33 @@ public class Compiler {
 	}
 	
 	// formalParamDec := ParamDec {"," ParamDec }
-	private void formalParamDec() {
-		paramDec();
+	private ArrayList<ParamDec> formalParamDec() {
+		ArrayList<ParamDec> paramDecList = new ArrayList<ParamDec>();
+
+		paramDecList.add(paramDec());
 
 		while(lexer.token == Token.COMMA){
 			// lê a ","
 			next();
-			paramDec();
+			paramDecList.add(paramDec());
 		}
+
+		return paramDecList;
 	}
 	
 	// paramDec := Type Id
-	private void paramDec() {
-		type();
+	private ParamDec paramDec() {
+		String id = "";
+		Type type = type();
 
 		if(lexer.token != Token.ID){
 			error("Id was expected");
 		}
+		else
+			id = lexer.getStringValue();
+		next();
+
+		return new ParamDec(id, type);
 	}
 	
 	// ESSA GRAMATICA NAO É CHAMADA POR NENHUMA OUTRA??
@@ -389,7 +403,7 @@ public class Compiler {
 
 	
 /* statement := AssignExpr ";" | IfStat | WhileStat | ReturnStat ";" |
-                WriteStat ";" | "break" ";" | ";" |
+                PrintStat ";" | "break" ";" | ";" |
                 RepeatStat ";" | LocalDec ";" |
                 AssertStat ";" */
 	private void statement() {
@@ -426,7 +440,7 @@ public class Compiler {
 			break;
 		default:
 			if ( lexer.token == Token.ID && lexer.getStringValue().equals("Out") ) {
-				writeStat();
+				printStat();
 			}
 			else {
 				expr();
@@ -547,8 +561,8 @@ public class Compiler {
 		next();
 	}
 
-	// Writestat := "Out" "." ["print:" | "println:" ] expr
-	private void writeStat() {
+	// Printstat ::= "Out" "." ["print:" | "println:" ] expr { "," expr }
+	private void printStat() {
 		// ja leu "Out" no statement
 		next();
 		check(Token.DOT, "a '.' was expected after 'Out'");
@@ -558,6 +572,7 @@ public class Compiler {
 			String printName = lexer.getStringValue();
 			} */
 		check(Token.IDCOLON, "'print:' or 'println:' was expected after 'Out.'");
+		// precisa criar a classe Out
 		String printName = lexer.getStringValue();
 		expr();
 	}
@@ -830,31 +845,54 @@ public class Compiler {
 	}
 
 	// type := BasicType | Id
-	private void type() {
+	private Type type() {
+		Type type = null;
+
 		if ( lexer.token == Token.INT || lexer.token == Token.BOOLEAN || lexer.token == Token.STRING ) {
-			String type = basicType();
+			type = basicType();
 			next();
 		}
 		else if ( lexer.token == Token.ID ) {
+			// nao sei pq tem id aqui
+			// type = new Type(lexer.getStringValue());
 			next();
 		}
 		else {
 			this.error("A type was expected");
+			next();
 		}
+		
+		return type;
 	}
 	
 	// basicType := "Int" | "Boolean" | "String"
-	private String basicType() {
-		if (lexer.token == Token.INT){
-			return "Int";
-		}
-		else if(lexer.token == Token.BOOLEAN){
-			return "Boolean";
-		}
-		else if(lexer.token == Token.STRING){
-			return "String";
-		}
-		return "";
+	private Type basicType() {
+		// if (lexer.token == Token.INT){
+		// 	return "Int";
+		// }
+		// else if(lexer.token == Token.BOOLEAN){
+		// 	return "Boolean";
+		// }
+		// else if(lexer.token == Token.STRING){
+		// 	return "String";
+		// }
+
+		// COLOQUEI IGUAL DE COMP, PRECISA REVISAR
+        switch (lexer.token) {
+            case INT:
+				next();
+				return Type.intType;
+            case BOOLEAN:
+				next();
+				return Type.booleanType;
+            case STRING:
+				next();
+				return Type.stringType;
+            default: 
+				next();
+				this.error("Error: Invalid type! token: " + lexer.token);
+				return Type.nullType;
+			}
 	}
 	
 	// basicType := "IntValue" | "BooleanValue" | "StringValue"

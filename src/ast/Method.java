@@ -5,6 +5,11 @@
 package ast;
 
 public class Method {
+	private String name;
+
+	public Method(String name){
+		this.name = name;
+	}
 
 	public void genJava(PW pw){
 
