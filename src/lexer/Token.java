@@ -48,8 +48,6 @@ public enum Token {
     PRINTLN("println"),
     PRIVATE("private"),
     PUBLIC("public"),
-    READINT("readint"),
-    READSTRING("readstring"),
     READINT("readInt"),
     READSTRING("readString"),
     REPEAT("repeat"),
