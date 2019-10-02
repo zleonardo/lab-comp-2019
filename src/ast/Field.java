@@ -5,6 +5,12 @@
 package ast;
 
 public class Field {
+	// private type
+	private IdList idList;
+	
+	public void setIdList(IdList idList){
+		this.idList = idList;
+	}
 
 	public void genJava(PW pw){
 		

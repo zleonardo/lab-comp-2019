@@ -240,6 +240,7 @@ public class Compiler {
 			}
 			else if ( lexer.token == Token.FUNC ) {
 				method = methodDec();
+				// nao sei como tratar casos que nao tem private nem public
 				if (qualifier.contains("private"))
 					memberList.addPrivateMethod(method);
 				else if (qualifier.contains("public"))
@@ -305,8 +306,8 @@ public class Compiler {
 	//				"func" Id [ "->" Type ] "{" StatementList"}"
 	private Method methodDec() {
 		Method method = null;
-
-		// ja leu "func" no metodo memberList
+		
+		// le func
 		next();
 
 		if ( lexer.token == Token.ID ) {
@@ -464,6 +465,7 @@ public class Compiler {
 
 	// localDec := "var" Type IdList [ "=" Expr ]
 	private void localDec() {
+		IdList idlist;
 
 		if(lexer.token != Token.VAR){
 			error("'var' was expected");
@@ -471,7 +473,7 @@ public class Compiler {
 
 		next();
 		type();
-		idList();
+		idList = idList();
 		
 		if ( lexer.token == Token.ASSIGN ) {
 			next();
@@ -481,19 +483,21 @@ public class Compiler {
 	}
 	
 	// idList := Id { "," Id } 
-	private void idList() {
+	private IdList idList() {
+		IdList idlist = new IdList();
 
 		check(Token.ID, "A variable name was expected");
+		idlist.add(lexer.getStringValue());
+		next();
 
-		while ( lexer.token == Token.ID ) {
+		while ( lexer.token == Token.COMMA ) {
 			next();
-			if ( lexer.token == Token.COMMA ) {
-				next();
-			}
-			else {
-				break;
-			}
+			check(Token.ID, "A variable name was expected");
+			idlist.add(lexer.getStringValue());
+			next();
 		}
+
+		return idList;
 	}
 
 	// repeatStat := "repeat" statementList "until" expr
@@ -820,27 +824,18 @@ public class Compiler {
 	// fieldDec := "var" Type IdList [ ";" ]
 	private Field fieldDec() {
 		Field field = null;
+		IdList idlist;
+
+		// le var
 		next();
 
 		type();
+		
+		idlist = idList();
 
-		if ( lexer.token != Token.ID ) {
-			this.error("A field name was expected");
-		}
-		else {
-			while ( lexer.token == Token.ID  ) {
-				lexer.nextToken();
-				if ( lexer.token == Token.COMMA ) {
-					lexer.nextToken();
-				}
-				else {
-					break;
-				}
-			}
-		}
-		if(lexer.token == Token.SEMICOLON){
-			next();
-		}
+		check(Token.SEMICOLON, "';' expected");
+		next();
+
 		return field;
 	}
 
