@@ -217,7 +217,7 @@ public class Compiler {
 
 		memberList = memberList();
 		classObj.setMemberList(memberList);
-
+		
 		check(Token.END, "'end' expected");
 		next();
 
@@ -232,6 +232,7 @@ public class Compiler {
 		while ( true ) {
 			// tem que verificar se no qualifier volta algo ou não pq é opcional
 			// e colocar na ast
+			
 			String qualifier = qualifier();
 			
 			// member := fieldDec | methodDec
@@ -331,6 +332,7 @@ public class Compiler {
 			next();
 			type();
 		}
+		
 		check(Token.LEFTCURBRACKET, "'{' expected");
 		next();
 
@@ -360,6 +362,7 @@ public class Compiler {
 	private ParamDec paramDec() {
 		String id = "";
 		Type type = type();
+		
 
 		if(lexer.token != Token.ID){
 			error("Id was expected");
@@ -396,7 +399,6 @@ public class Compiler {
 	// statementList := { Statement }
 	private void statementList() {
 		  // only '}' is necessary in this test
-		// Nao entendi isso que o zé colocou aqui
 		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
 			statement();
 		}
@@ -409,7 +411,7 @@ public class Compiler {
                 AssertStat ";" */
 	private void statement() {
 		boolean checkSemiColon = true;
-		switch ( lexer.token ) {
+		switch (lexer.token) {
 		case ASSIGN:
 			assignExpr();
 			break;
@@ -450,6 +452,8 @@ public class Compiler {
 		}
 		if ( checkSemiColon ) {
 			check(Token.SEMICOLON, "';' expected");
+			next();
+			
 		}
 	}
 	
@@ -473,7 +477,7 @@ public class Compiler {
 
 		next();
 		type();
-		idList = idList();
+		IdList idList = idList();
 		
 		if ( lexer.token == Token.ASSIGN ) {
 			next();
@@ -497,7 +501,7 @@ public class Compiler {
 			next();
 		}
 
-		return idList;
+		return idlist;
 	}
 
 	// repeatStat := "repeat" statementList "until" expr
@@ -544,11 +548,14 @@ public class Compiler {
 
 	// ifStat := "if" expr "{" Statement "}" [ "else" "{" Statement "}" ]
 	private void ifStat() {
-		// ja leu o "if" no statement
 		next();
+		
 		expr();
+		
 		check(Token.LEFTCURBRACKET, "'{' expected after the 'if' expression");
 		next();
+		
+		
 		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END && lexer.token != Token.ELSE ) {
 			statement();
 		}
@@ -567,7 +574,7 @@ public class Compiler {
 
 	// Printstat ::= "Out" "." ["print:" | "println:" ] expr { "," expr }
 	private void printStat() {
-		// ja leu "Out" no statement
+		// lê "Out"
 		next();
 		check(Token.DOT, "a '.' was expected after 'Out'");
 		next();
@@ -578,13 +585,12 @@ public class Compiler {
 		check(Token.IDCOLON, "'print:' or 'println:' was expected after 'Out.'");
 		// precisa criar a classe Out
 		String printName = lexer.getStringValue();
-		expr();
+		next();
+		exprList();
 	}
 	
 	// exprList := Expr { "," Expr }
 	private void exprList() {
-
-		boolean flag;
 
 		expr();
 
@@ -601,7 +607,7 @@ public class Compiler {
 		String relation = relation();
 
 		if(relation != "") {
-			relation();
+			next();
 			simpleExpr();
 		}
 	}
@@ -625,18 +631,24 @@ public class Compiler {
 		while (low != ""){
 			next();
 			term();
+			low = lowOperator();
 		}
 	}
 	
 	// term := signalFactor { highOperator signalFactor }
 	private void term() {
+		
 		signalFactor();
 
 		String high = highOperator();
 
 		while (high != ""){
+			
 			next();
+			
 			signalFactor();
+			
+			high = highOperator();
 		}
 	}
 	
@@ -680,10 +692,10 @@ public class Compiler {
 	// factor := basicValue | "(" Expr ")" | "!" factor | "nil | objectCreation | primaryExpr 
 	private void factor() {
 		switch (lexer.token) {
-            case INT:
+            case LITERALINT:
                 basicValue();
                 break;
-            case STRING:
+            case LITERALSTRING:
                 basicValue();
                 break;
             case TRUE:
@@ -699,14 +711,12 @@ public class Compiler {
                 next();
                 break;
             case NOT:
+            	next();
+            	factor();
+            	break;
+            case NULL:
                 next();
-                factor();
                 break;
-            case NIL:
-                next();
-                break;
-            case ID:
-            	objectCreation();
             default:
 				primaryExpr();
 		}
@@ -862,29 +872,14 @@ public class Compiler {
 	
 	// basicType := "Int" | "Boolean" | "String"
 	private Type basicType() {
-		// if (lexer.token == Token.INT){
-		// 	return "Int";
-		// }
-		// else if(lexer.token == Token.BOOLEAN){
-		// 	return "Boolean";
-		// }
-		// else if(lexer.token == Token.STRING){
-		// 	return "String";
-		// }
-
-		// COLOQUEI IGUAL DE COMP, PRECISA REVISAR
         switch (lexer.token) {
             case INT:
-				next();
 				return Type.intType;
             case BOOLEAN:
-				next();
 				return Type.booleanType;
             case STRING:
-				next();
 				return Type.stringType;
             default: 
-				next();
 				this.error("Error: Invalid type! token: " + lexer.token);
 				return Type.nullType;
 			}
@@ -953,7 +948,12 @@ public class Compiler {
 	// signalFactor := [ Signal ] factor
 	private void signalFactor() {
 		String signal = signal();
-		next();
+
+		if(signal != "") {
+			next();
+			signal = signal();
+		}
+		
 		factor();
 	}
 	
@@ -975,7 +975,7 @@ public class Compiler {
 		return token == Token.FALSE || token == Token.TRUE
 				|| token == Token.NOT || token == Token.SELF
 				|| token == Token.LITERALINT || token == Token.SUPER
-				|| token == Token.LEFTPAR || token == Token.NIL
+				|| token == Token.LEFTPAR || token == Token.NULL
 				|| token == Token.ID || token == Token.LITERALSTRING;
 	}
 
