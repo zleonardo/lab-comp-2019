@@ -7,7 +7,7 @@ package ast;
 import java.util.ArrayList;
 
 public class IdList {
-	private ArrayList<String> idList;
+	private ArrayList<String> idList = new ArrayList<String>();
 
 	public void add(String id){
 		this.idList.add(id);

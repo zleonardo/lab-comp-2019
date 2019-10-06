@@ -5,19 +5,20 @@
 package ast;
 
 public class MemberList {
-   	private FieldList fieldList;
-	private MethodList publicMethodList, privateMethodList;
+   	private FieldList fieldList = new FieldList();
+	private MethodList publicMethodList = new MethodList();
+	private MethodList privateMethodList = new MethodList();
 
 	public void addPublicMethod(Method method){
-		publicMethodList.add(method);
+		this.publicMethodList.add(method);
 	}
 
 	public void addPrivateMethod(Method method){
-		privateMethodList.add(method);
+		this.privateMethodList.add(method);
 	}
 
 	public void addField(Field field){
-		fieldList.add(field);
+		this.fieldList.add(field);
 	}
 
 	public FieldList getFieldList(){

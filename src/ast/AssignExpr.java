@@ -21,11 +21,11 @@ public class AssignExpr extends Statement{
     // }
 
     public Expr getLeft(){
-        return left;
+        return this.left;
     }
 
     public Expr getRight(){
-        return right;
+        return this.right;
     }
 
     public void setRightExpr(Expr right){

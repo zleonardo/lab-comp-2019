@@ -7,7 +7,7 @@ package ast;
 import java.util.ArrayList;
 
 public class MethodList {
-	private ArrayList<Method> methodList;
+	private ArrayList<Method> methodList = new ArrayList<Method>();
 
 	public void add(Method method){
 		this.methodList.add(method);

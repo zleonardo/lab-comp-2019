@@ -242,9 +242,9 @@ public class Compiler {
 			else if ( lexer.token == Token.FUNC ) {
 				method = methodDec();
 				// nao sei como tratar casos que nao tem private nem public
-				if (qualifier.contains("private"))
+				if (qualifier != null && qualifier.contains("private"))
 					memberList.addPrivateMethod(method);
-				else if (qualifier.contains("public"))
+				else 
 					memberList.addPublicMethod(method);
 			}
 			else {
@@ -550,7 +550,6 @@ public class Compiler {
 
 	// whileStat := "while" expr "{" StatementList "}"
 	private WhileStat whileStat() {
-
 		// ja leu "while" no metodo statement
 		next();
 
@@ -595,16 +594,14 @@ public class Compiler {
 		return ifStat;
 	}
 
-	// Printstat ::= "Out" "." ["print:" | "println:" ] expr { "," expr }
+	// Printstat ::= "Out" "." ( "print:" | "println:" ) expr { "," expr }
 	private void printStat() {
 		// lê "Out"
 		next();
+
 		check(Token.DOT, "a '.' was expected after 'Out'");
 		next();
-		// o zé colocou esse check, mas pela gramatica é opcional?. Então teria que ser:
-		/* if(lexer.token == Token.IDCOLON){
-			String printName = lexer.getStringValue();
-			} */
+
 		check(Token.IDCOLON, "'print:' or 'println:' was expected after 'Out.'");
 		// precisa criar a classe Out
 		String printName = lexer.getStringValue();
