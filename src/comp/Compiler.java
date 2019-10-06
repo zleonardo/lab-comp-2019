@@ -833,15 +833,13 @@ public class Compiler {
 
 	// fieldDec := "var" Type IdList [ ";" ]
 	private Field fieldDec() {
-		Field field = null;
-		IdList idlist;
 
 		// le var
 		next();
 
 		type();
 		
-		idlist = idList();
+		Field field = new Field(idList());
 
 		check(Token.SEMICOLON, "';' expected");
 		next();
