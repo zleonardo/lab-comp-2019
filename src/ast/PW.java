@@ -7,7 +7,6 @@ package ast;
 
 import java.io.PrintWriter;
 
-
 public class PW {
 
 	public PW( PrintWriter out ) {

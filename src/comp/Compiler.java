@@ -397,11 +397,16 @@ public class Compiler {
 	}
 
 	// statementList := { Statement }
-	private void statementList() {
+	private StatementList statementList() {
+		StatementList statList = new StatementList();
+
+		// NAO ENTENDI ESSE WHILE
 		  // only '}' is necessary in this test
 		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
-			statement();
+			statList.addStat(statement());
 		}
+
+		return statList;
 	}
 
 	
@@ -409,81 +414,89 @@ public class Compiler {
                 PrintStat ";" | "break" ";" | ";" |
                 RepeatStat ";" | LocalDec ";" |
                 AssertStat ";" */
-	private void statement() {
+	private Statement statement() {
+		Statement statement = null;
 		boolean checkSemiColon = true;
-		switch (lexer.token) {
-		case ASSIGN:
-			assignExpr();
-			break;
-		case IF:
-			ifStat();
-			checkSemiColon = false;
-			break;
-		case WHILE:
-			whileStat();
-			checkSemiColon = false;
-			break;
-		case RETURN:
-			returnStat();
-			break;
-		case BREAK:
-			breakStat();
-			break;
-		case SEMICOLON:
-			next();
-			break;
-		case REPEAT:
-			repeatStat();
-			break;
-		case VAR:
-			localDec();
-			break;
-		case ASSERT:
-			assertStat();
-			break;
-		default:
-			if ( lexer.token == Token.ID && lexer.getStringValue().equals("Out") ) {
-				printStat();
-			}
-			else {
-				expr();
-			}
 
+		switch (lexer.token) {
+			case ASSIGN:
+				statement = assignExpr();
+				break;
+			case IF:
+				statement = ifStat();
+				checkSemiColon = false;
+				break;
+			case WHILE:
+				statement = whileStat();
+				checkSemiColon = false;
+				break;
+			case RETURN:
+				statement = returnStat();
+				break;
+			case BREAK:
+				statement = breakStat();
+				break;
+			case SEMICOLON:
+				next();
+				break;
+			case REPEAT:
+				statement = repeatStat();
+				break;
+			case VAR:
+				statement = localDec();
+				break;
+			case ASSERT:
+				statement = assertStat();
+				break;
+			default:
+				if ( lexer.token == Token.ID && lexer.getStringValue().equals("Out") ) {
+					printStat();
+				}
+				else {
+					expr();
+				}
 		}
 		if ( checkSemiColon ) {
 			check(Token.SEMICOLON, "';' expected");
 			next();
 			
 		}
+		return statement;
 	}
 	
 	// assignExpr := Expr [ "=" Expr]
-	private void assignExpr() {
-		expr();
+	private AssignExpr assignExpr() {
+		AssignExpr assignExpr = new AssignExpr();
+
+		assignExpr.setLeftExpr(expr());
 
 		if(lexer.token == Token.ASSIGN){
 			next();
-			expr();
+			assignExpr.setRightExpr(expr());
 		}
+
+		return assignExpr;
 	}
 
 	// localDec := "var" Type IdList [ "=" Expr ]
-	private void localDec() {
-		IdList idlist;
-
+	private LocalDecStat localDec() {
+		// TERMINAR
 		if(lexer.token != Token.VAR){
 			error("'var' was expected");
 		}
 
 		next();
-		type();
-		IdList idList = idList();
+		LocalDecStat localDec = new LocalDecStat(type());
+
+		localDec.setIdList(idList());
 		
 		if ( lexer.token == Token.ASSIGN ) {
 			next();
 			// check if there is just one variable
 			expr();
 		}
+
+		return localDec;
 	}
 	
 	// idList := Id { "," Id } 
@@ -505,57 +518,65 @@ public class Compiler {
 	}
 
 	// repeatStat := "repeat" statementList "until" expr
-	private void repeatStat() {
+	private RepeatStat repeatStat() {
 		// ja leu "repeat" no statement
 		next();
-		// Esse while o zé colocou, mas nao sei ainda o porque
-		while ( lexer.token != Token.UNTIL && lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
-			statementList();
-		}
-		check(Token.UNTIL, "missing keyword 'until'");
 
-		expr();
+		// Esse while o zé colocou, mas nao sei ainda o porque
+		// while ( lexer.token != Token.UNTIL && lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
+			RepeatStat repeatStat = new RepeatStat(statementList());
+		// }
+		check(Token.UNTIL, "missing keyword 'until'");
+		next();
+
+		repeatStat.setCondition(expr());
+
+		return repeatStat;
 	}
 
 	// breakStat := "break"
-	private void breakStat() {
+	private BreakStat breakStat() {
 		// ja leu o "break" no statement
 		next();
-
+		return new BreakStat();
 	}
 
 	// returnStat := "return" expr
-	private void returnStat() {
+	private ReturnStat returnStat() {
 		// ja leu o "return" no statement
 		next();
-		expr();
+		return new ReturnStat(expr());
 	}
 
 	// whileStat := "while" expr "{" StatementList "}"
-	private void whileStat() {
+	private WhileStat whileStat() {
+
 		// ja leu "while" no metodo statement
 		next();
-		expr();
+
+		WhileStat whileStat = new WhileStat(expr());
+
 		check(Token.LEFTCURBRACKET, "missing '{' after the 'while' expression");
 		next();
-		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
-			statementList();
-		}
-		check(Token.RIGHTCURBRACKET, "missing '}' after 'while' body");
 
+		whileStat.setWhilePart(statementList());
+
+		check(Token.RIGHTCURBRACKET, "missing '}' after 'while' body");
 		next();
+
+		return whileStat;
 	}
 
 	// ifStat := "if" expr "{" Statement "}" [ "else" "{" Statement "}" ]
-	private void ifStat() {
+	private IfStat ifStat(){
 		next();
 		
-		expr();
+		IfStat ifStat = new IfStat(expr());
 		
 		check(Token.LEFTCURBRACKET, "'{' expected after the 'if' expression");
 		next();
 		
-		
+		// nao era pra ser statementlist?
 		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END && lexer.token != Token.ELSE ) {
 			statement();
 		}
@@ -570,6 +591,8 @@ public class Compiler {
 			check(Token.RIGHTCURBRACKET, "'}' was expected");
 		}
 		next();
+
+		return ifStat;
 	}
 
 	// Printstat ::= "Out" "." ["print:" | "println:" ] expr { "," expr }
@@ -601,7 +624,7 @@ public class Compiler {
 	}
 
 	// expr := SimpleExpression [ Relation SimpleExpr ]
-	private void expr() {
+	private Expr expr() {
 		simpleExpr();
 
 		String relation = relation();
@@ -610,6 +633,9 @@ public class Compiler {
 			next();
 			simpleExpr();
 		}
+		
+		//teste
+		return new VariableExpr();
 	}
 	
 	// simpleExpr := SumSubExpr { "++" SumSubExpr }
