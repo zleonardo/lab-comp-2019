@@ -872,6 +872,7 @@ public class Compiler {
 
 	// type := BasicType | Id
 	private Type type() {
+		// TERMINAR
 		Type type = null;
 
 		if ( lexer.token == Token.INT || lexer.token == Token.BOOLEAN || lexer.token == Token.STRING ) {
@@ -879,8 +880,7 @@ public class Compiler {
 			next();
 		}
 		else if ( lexer.token == Token.ID ) {
-			// nao sei pq tem id aqui
-			// type = new Type(lexer.getStringValue());
+			type = new TypeCianetoClass(lexer.getStringValue());
 			next();
 		}
 		else {
@@ -902,11 +902,14 @@ public class Compiler {
 				return Type.stringType;
             default: 
 				this.error("Error: Invalid type! token: " + lexer.token);
+				// se pa eh assim
+				// return null;
+				// acho q nulltype eh pra quando vc usa null no codigo em cianeto
 				return Type.nullType;
 			}
 	}
 	
-	// basicType := "IntValue" | "BooleanValue" | "StringValue"
+	// basicValue := "IntValue" | "BooleanValue" | "StringValue"
 	private void basicValue() {
 		next();
 	}
@@ -916,28 +919,16 @@ public class Compiler {
 		next();
 	}
 
-	/**
-	 * change this method to 'private'.
-	 * uncomment it
-	 * implement the methods it calls
-	 */
-	// "assertStat" :=  expr "," StringValue
-	public Statement assertStat() {
+	private Statement assertStat(){
+		AssertStat assertStat = new AssertStat(expr());
+		next();
+		
+		check(Token.COMMA,"',' expected after the expression of the 'assert' statement");
+		next();
 
-		lexer.nextToken();
-		int lineNumber = lexer.getLineNumber();
-		expr();
-		if ( lexer.token != Token.COMMA ) {
-			this.error("',' expected after the expression of the 'assert' statement");
-		}
-		lexer.nextToken();
-		if ( lexer.token != Token.LITERALSTRING ) {
-			this.error("A literal string expected after the ',' of the 'assert' statement");
-		}
-		String message = lexer.getLiteralStringValue();
-		lexer.nextToken();
-		/*if ( lexer.token == Token.SEMICOLON )
-			lexer.nextToken();*/
+		check(Token.LITERALSTRING, "A literal string expected after the ',' of the 'assert' statement");
+		assertStat.setString(lexer.getStringValue());
+		next();
 
 		return null;
 	}
