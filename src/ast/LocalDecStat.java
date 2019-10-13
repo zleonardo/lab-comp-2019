@@ -7,6 +7,7 @@ package ast;
 public class LocalDecStat extends Statement{
 	private IdList idList;
 	private Type type;
+	private Expr expr;
 
 	public LocalDecStat(Type type){
 		this.type = type;
@@ -14,6 +15,10 @@ public class LocalDecStat extends Statement{
 
 	public void setIdList(IdList idList){
 		this.idList = idList;
+	}
+
+	public void setExpr(Expr expr){
+		this.expr = expr;
 	}
 
 	public void genC(PW pw){
