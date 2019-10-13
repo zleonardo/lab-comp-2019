@@ -664,8 +664,9 @@ public class Compiler {
 	}
 	
 	// term := signalFactor { highOperator signalFactor }
-	private void term() {
-		
+	private CompositeExpr term() {
+		// PAREI AQUI
+		CompositeExpr ce;
 		signalFactor();
 
 		String high = highOperator();
@@ -681,13 +682,15 @@ public class Compiler {
 	}
 	
 	// signalFactor := [ Signal ] factor
-	private void signalFactor() {
+	private Expr signalFactor() {
 		if(lexer.token == Token.PLUS || lexer.token == Token.MINUS){
 			Token signal = signal();
 			next();
+		}
 		
 		// NAO SEI COMO FAZER AINDA
-		factor();
+		// melhor ver quando for fazer a semantica
+		return factor();
 	}
 	
 	// signal := "+" | "-"
@@ -699,7 +702,6 @@ public class Compiler {
 	
 	// factor := basicValue | "(" Expr ")" | "!" factor | "nil" | objectCreation | primaryExpr 
 	private Expr factor() {
-		// ta faltando o case pra objectCreation
 		switch (lexer.token) {
             case LITERALINT:
             case LITERALSTRING:
@@ -718,7 +720,6 @@ public class Compiler {
             case NULL:
 				return new NullExpr();
             default:
-				// falta fazer
 				return primaryExpr();
 		}
 	}
