@@ -3,7 +3,6 @@
 	Nome: Leonardo Zaccarias	 RA: 620491
 */
 
-
 package comp;
 
 import java.io.PrintWriter;
@@ -622,17 +621,22 @@ public class Compiler {
 
 	// expr := SimpleExpression [ Relation SimpleExpr ]
 	private Expr expr() {
+		// CompositeExpr left = simpleExpr();
+		CompositeExpr left = null;
 		simpleExpr();
 
-		String relation = relation();
-
-		if(relation != "") {
-			next();
-			simpleExpr();
+		switch(lexer.token){
+			case EQ:
+			case LT:
+			case GT:
+			case LE:
+			case GE:
+			case NEQ:
+				String relation = relation();
+				left = new CompositeExpr(left,  relation, simpleExpr());
 		}
 		
-		//teste
-		return new VariableExpr();
+		return left;
 	}
 	
 	// simpleExpr := SumSubExpr { "++" SumSubExpr }
@@ -675,99 +679,95 @@ public class Compiler {
 		}
 	}
 	
-	// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
-	private String relation() {
-		switch(lexer.token){
-			case EQ:
-				return "==";
-			case LT:
-				return "<";
-			case GT:
-				return ">";
-			case LE:
-				return "<=";
-			case GE:
-				return ">=";
-			case NEQ:
-				return ">";
-			default:
-				return "";
-		}
+	// signalFactor := [ Signal ] factor
+	private void signalFactor() {
+		if(lexer.token == Token.PLUS || lexer.token == Token.MINUS){
+			Token signal = signal();
+			next();
+		
+		// NAO SEI COMO FAZER AINDA
+		factor();
 	}
 	
-	// readExpr() := "In" "." [ "readInt" | "readString" ]
-	private void readExpr() {
-		if(lexer.token != Token.IN){
-			error("'In' was expected");
-		}
-		check(Token.DOT, "'.' is missing after 'In'");
-
-		if(lexer.token == Token.READINT){
-			// voltar int
-			next();
-		}
-		else if(lexer.token == Token.READSTRING){
-			//voltar string
-			next();
-		}
+	// signal := "+" | "-"
+	private Token signal() {
+		Token signal = lexer.Token;
+		next();
+		return signal;
 	}
 	
-	// factor := basicValue | "(" Expr ")" | "!" factor | "nil | objectCreation | primaryExpr 
-	private void factor() {
+	// factor := basicValue | "(" Expr ")" | "!" factor | "nil" | objectCreation | primaryExpr 
+	private Expr factor() {
+		// ta faltando o case pra objectCreation
 		switch (lexer.token) {
             case LITERALINT:
-                basicValue();
-                break;
             case LITERALSTRING:
-                basicValue();
-                break;
             case TRUE:
-                basicValue();
-                break;
             case FALSE:
-                basicValue();
-                break;
+                return basicValue();
             case LEFTPAR:
                 next();
-                expr();
+                Expr Expr = new ExprInParentheses(expr());
                 check(Token.RIGHTPAR, "')' was expected");
                 next();
-                break;
+				return factor;
             case NOT:
             	next();
-            	factor();
-            	break;
+				return new NegationFactor(factor());
             case NULL:
-                next();
-                break;
+				return new NullExpr();
             default:
-				primaryExpr();
+				return primaryExpr();
 		}
 	}
 	
-	// objectCreaton := Id "." "new"
-	private void objectCreation() {
-			next();
-			check(Token.DOT, "'.' was expected after id");
-			next();
-			check(Token.NEW, "'new' was expected after '.'");
-			next();
+	// basicValue := "IntValue" | "BooleanValue" | "StringValue"
+	private Value basicValue() {
+		switch (lexer.token) {
+            case LITERALINT:
+				next();
+				return new Value(lexer.getNumberValue);
+            case LITERALSTRING:
+				next();
+				return new Value(lexer.getStringValue);
+            case TRUE:
+				next();
+				return new Value(true);
+            case FALSE:
+				next();
+				return new Value(false);
+		}
 	}
 	
-/*  primaryExpr := "super" "." IdColon exprList | "super" "." Id |
- 					Id | Id "." Id | Id "." IdColon ExprList | "self" |
- 					"self" "." Id | "self" "." IdColon exprList | 
- 					"self" "." Id "." IdColon exprList | "self" "." Id "." Id
- */	
+	// objectCreation := Id "." "new"
+	// REVISAR
+	// joguei pra dentro do primary
+	private void objectCreation(){
+		next();
+		check(Token.DOT, "'.' was expected after id");
+		next();
+		check(Token.NEW, "'new' was expected after '.'");
+		next();
+	}
+	
+	/*  primaryExpr := "super" "." IdColon exprList | "super" "." Id |
+						Id | Id "." Id | Id "." IdColon ExprList | "self" |
+						"self" "." Id | "self" "." IdColon exprList | 
+						"self" "." Id "." IdColon exprList | "self" "." Id "." Id
+	*/	
 	private void primaryExpr() {
+		// PRECISA TERMINAR E AINDA NAO SEI COMO FAZER
+		String id = "";
 		if(lexer.token == Token.SUPER){
 			next();
 			check(Token.DOT, "'.' was expected after 'super'");
 			next();
 			if(lexer.token == Token.ID){
-
+				id = lexer.getStringValue();
+				next();
 			}
 			else if(lexer.token == Token.IDCOLON){
+				id = lexer.getStringValue();
 				next();
 				exprList();
 			}
@@ -776,14 +776,20 @@ public class Compiler {
 			}
 		}
 		else if(lexer.token == Token.ID){
+			id = lexer.getStringValue();
 			next();
 			if(lexer.token == Token.DOT){
+				next();
 				if(lexer.token == Token.ID){
-					
+					next();
 				}
 				else if(lexer.token == Token.IDCOLON){
 					next();
 					exprList();
+				}
+				else if(lexer.token == Token.NEW){
+					next();
+					return new objectCreation(String id);
 				}
 				else{
 					error("Id or IdColon was expected");
@@ -791,16 +797,22 @@ public class Compiler {
 			}
 			else{
 				// é só id entao
+				return id;
 			}
 		}
 		else if(lexer.token == Token.SELF){
 			next();
 			if(lexer.token == Token.DOT){
+				next();
 				if(lexer.token == Token.ID){
+					id = lexer.getStringValue();
 					if(lexer.token == Token.DOT){
+						next();
 						if(lexer.token == Token.ID){
+							id = lexer.getStringValue();
 						}
 						else if(lexer.token == Token.IDCOLON){
+							id = lexer.getStringValue();
 							next();
 							exprList();
 						}
@@ -810,9 +822,11 @@ public class Compiler {
 					}
 					else{
 						// só id mesmo
+						return id;
 					}
 				}
 				else if(lexer.token == Token.IDCOLON){
+					id = lexer.getStringValue();
 					next();
 					exprList();
 				}
@@ -826,31 +840,44 @@ public class Compiler {
 		}
 	}
 	
+	// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
+	private Token relation() {
+		Token relation = lexer.token;
+		next();
+		return relation;
+	}
+	
 	// highOperator := "*" | "/" | "&&"
-	private String highOperator() {
+	private Token highOperator() {
 		switch(lexer.token){
 			case MULT:
-				return "*";
+				next();
+				return Token.MULT;
 			case DIV:
-				return "/";
+				next();
+				return Token.DIV;
 			case AND:
-				return "&&";
+				next();
+				return Token.AND;
 			default:
-				return "";
+				return null;
 		}
 	}
 	
 	// lowOperator := "+" | "-" | "||"
-	private String lowOperator() {
+	private Token lowOperator() {
 		switch(lexer.token){
 			case PLUS:
-				return "+";
+				next();
+				return Token.PLUS;
 			case MINUS:
-				return "-";
+				next();
+				return Token.MINUS;
 			case OR:
-				return "||";
+				next();
+				return Token.OR;
 			default:
-				return "";
+				return null;
 		}
 	}
 
@@ -909,15 +936,10 @@ public class Compiler {
 			}
 	}
 	
-	// basicValue := "IntValue" | "BooleanValue" | "StringValue"
-	private void basicValue() {
-		next();
-	}
-	
-	// booleanValue := "true" | "false"
-	private void booleanValue() {
-		next();
-	}
+	// // booleanValue := "true" | "false"
+	// private void booleanValue() {
+	// 	next();
+	// }
 
 	private Statement assertStat(){
 		AssertStat assertStat = new AssertStat(expr());
@@ -932,18 +954,6 @@ public class Compiler {
 
 		return null;
 	}
-
-	// digit := 0 | ... | 9
-	private void digit() {
-		//??
-		// se pa nao precisa disso aqui, so no lexer
-	}
-
-	// intValue := digit { digit }
-	private void intValue() {
-		//??
-		next();
-	}
 	
 	private LiteralInt literalInt() {
 
@@ -957,38 +967,29 @@ public class Compiler {
 		return new LiteralInt(value);
 	}
 	
-	// signalFactor := [ Signal ] factor
-	private void signalFactor() {
-		String signal = signal();
-
-		if(signal != "") {
-			next();
-			signal = signal();
-		}
-		
-		factor();
-	}
-	
-	// signal := "+" | "-"
-	private String signal() {
-		if(lexer.token == Token.PLUS){
-			return "+";
-		}
-		else if(lexer.token == Token.MINUS){
-			return "-";
-		}
-		else{
-			return "";
-		}
-	}
-
 	private static boolean startExpr(Token token) {
-
 		return token == Token.FALSE || token == Token.TRUE
 				|| token == Token.NOT || token == Token.SELF
 				|| token == Token.LITERALINT || token == Token.SUPER
 				|| token == Token.LEFTPAR || token == Token.NULL
 				|| token == Token.ID || token == Token.LITERALSTRING;
+	}
+
+	// readExpr() := "In" "." [ "readInt" | "readString" ]
+	private void readExpr() {
+		if(lexer.token != Token.IN){
+			error("'In' was expected");
+		}
+		check(Token.DOT, "'.' is missing after 'In'");
+
+		if(lexer.token == Token.READINT){
+			// voltar int
+			next();
+		}
+		else if(lexer.token == Token.READSTRING){
+			//voltar string
+			next();
+		}
 	}
 
 	private SymbolTable		symbolTable;

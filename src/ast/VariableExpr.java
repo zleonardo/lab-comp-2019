@@ -19,7 +19,7 @@ public class VariableExpr extends Expr {
 	// 	// return this.variable.getName();
 	// }
 
-	public void genC(PW pw, boolean seila){
+	public void genC(PW pw){
 		// pw.print(this.variable.getName());
 	}
 }
