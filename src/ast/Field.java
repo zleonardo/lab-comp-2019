@@ -5,10 +5,11 @@
 package ast;
 
 public class Field {
-	// private type
+	private Type type;
 	private IdList idList;
 	
-	public Field(IdList idList){
+	public Field(Type type, IdList idList){
+		this.type = type;
 		this.idList = idList;
 	}
 

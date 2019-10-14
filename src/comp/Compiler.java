@@ -621,64 +621,69 @@ public class Compiler {
 	}
 
 	// expr := SimpleExpression [ Relation SimpleExpr ]
-	private Expr expr() {
+	private CompositeExpr expr() {
 		// CompositeExpr left = simpleExpr();
-		CompositeExpr left = null;
-		simpleExpr();
+		CompositeExpr ce = simpleExpr();
 
 		switch(lexer.token){
+			// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
 			case EQ:
 			case LT:
 			case GT:
 			case LE:
 			case GE:
 			case NEQ:
-				String relation = relation();
-				left = new CompositeExpr(left,  relation, simpleExpr());
+				Token relation = lexer.token;
+				next();
+				ce = new CompositeExpr(ce,  relation, simpleExpr());
 		}
 		
-		return left;
+		return ce;
 	}
 	
 	// simpleExpr := SumSubExpr { "++" SumSubExpr }
-	private void simpleExpr() {
-		SumSubExpr();
+	private CompositeExpr simpleExpr() {
+		CompositeExpr ce = sumSubExpr();
 
+		// lowOperator := "+" | "-" | "||"
 		while(lexer.token == Token.PLUSPLUS){
+			Token oper = lexer.token;
 			next();
-			SumSubExpr();
+			
+			ce = new CompositeExpr(ce, oper, sumSubExpr());
 		}
+
+		return ce;
 	}
 	
 	// SumSubExpr := Term { lowOperator Term }
-	private void SumSubExpr() {
-		term();
+	private CompositeExpr sumSubExpr() {
+		CompositeExpr ce = term();
 
-		String low = lowOperator();
-
-		while (low != ""){
+		// lowOperator := "+" | "-" | "||"
+		while(lexer.token == Token.PLUS || lexer.token == Token.MINUS || lexer.token == Token.OR){
+			Token oper = lexer.token;
 			next();
-			term();
-			low = lowOperator();
+			
+			ce = new CompositeExpr(ce, oper, term());
 		}
+
+		return ce;
 	}
 	
 	// term := signalFactor { highOperator signalFactor }
 	private CompositeExpr term() {
-		// PAREI AQUI
-		CompositeExpr ce;
-		signalFactor();
+		CompositeExpr ce = signalFactor();
 
-		String high = highOperator();
-
-		while (high != ""){
-			
+		// highOperator := "*" | "/" | "&&"
+		while(lexer.token == Token.MULT || lexer.token == Token.DIV || lexer.token == Token.AND){
+			Token oper = lexer.token;
 			next();
 			
-			signalFactor();
-			
-			high = highOperator();
+			ce = new CompositeExpr(ce, oper, signalFactor());
 		}
+
+		return ce;
 	}
 	
 	// signalFactor := [ Signal ] factor
@@ -820,67 +825,24 @@ public class Compiler {
 		}
 	}
 	
-	// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
-	private Token relation() {
-		Token relation = lexer.token;
-		next();
-		return relation;
-	}
-	
-	// highOperator := "*" | "/" | "&&"
-	private Token highOperator() {
-		switch(lexer.token){
-			case MULT:
-				next();
-				return Token.MULT;
-			case DIV:
-				next();
-				return Token.DIV;
-			case AND:
-				next();
-				return Token.AND;
-			default:
-				return null;
-		}
-	}
-	
-	// lowOperator := "+" | "-" | "||"
-	private Token lowOperator() {
-		switch(lexer.token){
-			case PLUS:
-				next();
-				return Token.PLUS;
-			case MINUS:
-				next();
-				return Token.MINUS;
-			case OR:
-				next();
-				return Token.OR;
-			default:
-				return null;
-		}
-	}
-
 	// fieldDec := "var" Type IdList [ ";" ]
 	private Field fieldDec() {
-
 		// le var
 		next();
 
-		type();
+		Type type = type();
 		
-		Field field = new Field(idList());
+		IdList idList = idList();
 
 		check(Token.SEMICOLON, "';' expected");
 		next();
 
-		return field;
+		return new Field(type, idList);
 	}
 
 	// type := BasicType | Id
 	private Type type() {
-		// TERMINAR
-		Type type = null;
+		Type type;
 
 		if ( lexer.token == Token.INT || lexer.token == Token.BOOLEAN || lexer.token == Token.STRING ) {
 			type = basicType();
@@ -892,6 +854,7 @@ public class Compiler {
 		}
 		else {
 			this.error("A type was expected");
+			type = null;
 			next();
 		}
 		
@@ -909,11 +872,8 @@ public class Compiler {
 				return Type.stringType;
             default: 
 				this.error("Error: Invalid type! token: " + lexer.token);
-				// se pa eh assim
-				// return null;
-				// acho q nulltype eh pra quando vc usa null no codigo em cianeto
-				return Type.nullType;
-			}
+				return null;
+		}
 	}
 	
 	// // booleanValue := "true" | "false"
