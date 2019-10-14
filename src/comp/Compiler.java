@@ -700,7 +700,7 @@ public class Compiler {
 	
 	// signal := "+" | "-"
 	private Token signal() {
-		Token signal = lexer.Token;
+		Token signal = lexer.token;
 		next();
 		return signal;
 	}
@@ -715,10 +715,10 @@ public class Compiler {
                 return basicValue();
             case LEFTPAR:
                 next();
-                Expr Expr = new ExprInParentheses(expr());
+                Expr expr = new ExprInParentheses(expr());
                 check(Token.RIGHTPAR, "')' was expected");
                 next();
-				return factor;
+				return expr;
             case NOT:
             	next();
 				return new NegationFactor(factor());
@@ -734,10 +734,10 @@ public class Compiler {
 		switch (lexer.token) {
             case LITERALINT:
 				next();
-				return new Value(lexer.getNumberValue);
+				return new Value(lexer.getNumberValue());
             case LITERALSTRING:
 				next();
-				return new Value(lexer.getStringValue);
+				return new Value(lexer.getStringValue());
             case TRUE:
 				next();
 				return new Value(true);
