@@ -17,10 +17,10 @@ public class AssertStat extends Statement{
     }
 
     public void genC(PW pw){
-        pw.print("\n");
-        // pw.tab();
-    	pw.print("return ");
+    	pw.print("assert ");
         this.expr.genC(pw);
+    	pw.print(" ");
+        this.string.genC(pw);
         pw.println(";");
 	}
 }

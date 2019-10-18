@@ -40,31 +40,9 @@ public class AssignExpr extends Statement{
     // REAPOVEITAR
     public void genC(PW pw){
         // String assign
-        //pw.print("\t");
-
-        // String assign
-        if(this.left.getType() == Type.stringType){
-            if(this.right != null){
-                pw.print("strcpy(");
-                this.left.genC(pw);
-                pw.print(", ");
-                this.right.genC(pw);
-                pw.println(");");
-            }
-            else{
-                this.left.genC(pw);
-                pw.println(";");
-            }
-        }
-        // int assign
-        else {
-            this.left.genC(pw);
-
-            if (this.right != null){
-                pw.print(" = ");
-                this.right.genC(pw);
-            }
-            pw.println(";");
-        }
+        this.left.genC(pw);
+        pw.print(" = ");
+        this.right.genC(pw);
+        pw.println(";");
 	}
 }

@@ -5,7 +5,7 @@
 package ast;
 
 public class NegationFactor extends Expr {
-	private Expr NegationFactor;
+	private Expr expr;
 	private Type type;
 
 	public NegationFactor(Expr expr) {

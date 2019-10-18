@@ -434,7 +434,7 @@ public class Compiler {
 				break;
 			case BREAK:
 				statement = breakStat();
-				break;
+			breakStat	break;
 			case SEMICOLON:
 				next();
 				break;
@@ -734,16 +734,16 @@ public class Compiler {
 		switch (lexer.token) {
             case LITERALINT:
 				next();
-				return new Value(lexer.getNumberValue);
+				return new LiteralInt(lexer.getNumberValue);
             case LITERALSTRING:
 				next();
-				return new Value(lexer.getStringValue);
+				return new LiteralString(lexer.getStringValue);
             case TRUE:
 				next();
-				return new Value(true);
+				return LiteralBoolean.True;
             case FALSE:
 				next();
-				return new Value(false);
+				return new LiteralBoolean.False;
 		}
 	}
 	

@@ -11,7 +11,7 @@ public class LiteralString extends Expr {
         this.literalString = literalString;
     }
     
-    public void genC( PW pw, boolean putParenthesis ) {
+    public void genC( PW pw ) {
         pw.print(literalString);
     }
 
