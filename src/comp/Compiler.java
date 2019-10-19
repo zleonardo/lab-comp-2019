@@ -128,17 +128,17 @@ public class Compiler {
 					lexer.token == Token.ID ) {
 				switch ( lexer.token ) {
 				case LITERALINT:
-					metaobjectParamList.add(lexer.getNumberValue());
+					metaobjectParamList.add(literalInt());
 					break;
 				case LITERALSTRING:
-					metaobjectParamList.add(lexer.getLiteralStringValue());
+					metaobjectParamList.add(literalString());
 					break;
 				case ID:
 					metaobjectParamList.add(lexer.getStringValue());
 				}
-				lexer.nextToken();
+				next();
 				if ( lexer.token == Token.COMMA )
-					lexer.nextToken();
+					next();
 				else
 					break;
 			}
@@ -645,12 +645,10 @@ public class Compiler {
 	private CompositeExpr simpleExpr() {
 		CompositeExpr ce = sumSubExpr();
 
-		// lowOperator := "+" | "-" | "||"
 		while(lexer.token == Token.PLUSPLUS){
-			Token oper = lexer.token;
 			next();
 			
-			ce = new CompositeExpr(ce, oper, sumSubExpr());
+			ce = new CompositeExpr(ce, Token.PLUSPLUS, sumSubExpr());
 		}
 
 		return ce;
@@ -688,8 +686,9 @@ public class Compiler {
 	
 	// signalFactor := [ Signal ] factor
 	private Expr signalFactor() {
+		// signal := "+" | "-"
 		if(lexer.token == Token.PLUS || lexer.token == Token.MINUS){
-			Token signal = signal();
+			Token signal = lexer.token;
 			next();
 		}
 		
@@ -698,52 +697,37 @@ public class Compiler {
 		return factor();
 	}
 	
-	// signal := "+" | "-"
-	private Token signal() {
-		Token signal = lexer.token;
-		next();
-		return signal;
-	}
-	
 	// factor := basicValue | "(" Expr ")" | "!" factor | "nil" | objectCreation | primaryExpr 
 	private Expr factor() {
 		switch (lexer.token) {
+			// basicValue := "IntValue" | "BooleanValue" | "StringValue"
             case LITERALINT:
-            case LITERALSTRING:
-            case TRUE:
-            case FALSE:
-                return basicValue();
-            case LEFTPAR:
-                next();
-                Expr expr = new ExprInParentheses(expr());
-                check(Token.RIGHTPAR, "')' was expected");
-                next();
-				return expr;
-            case NOT:
-            	next();
-				return new NegationFactor(factor());
-            case NULL:
-				return new NullExpr();
-            default:
-				return primaryExpr();
-		}
-	}
-	
-	// basicValue := "IntValue" | "BooleanValue" | "StringValue"
-	private Value basicValue() {
-		switch (lexer.token) {
-            case LITERALINT:
-				next();
-				return new LiteralInt(lexer.getNumberValue);
+				return literalInt();
             case LITERALSTRING:
 				next();
-				return new LiteralString(lexer.getStringValue);
+				return literalString();
             case TRUE:
 				next();
 				return LiteralBoolean.True;
             case FALSE:
 				next();
-				return new LiteralBoolean.False;
+				return LiteralBoolean.False;
+        
+		    case LEFTPAR:
+                next();
+                Expr expr = new ExprInParentheses(expr());
+                check(Token.RIGHTPAR, "')' was expected");
+                next();
+				return expr;
+        
+		    case NOT:
+            	next();
+				return new NegationFactor(factor());
+        
+		    case NULL:
+				return new NullExpr();
+            default:
+				return primaryExpr();
 		}
 	}
 	
@@ -770,7 +754,6 @@ public class Compiler {
 						Id "." IdColon ExprList
 	*/	
 	private PrimaryExpr primaryExpr() {
-		// PRECISA TERMINAR E AINDA NAO SEI COMO FAZER
 		PrimaryExpr primaryExpr = new PrimaryExpr();
 
 		// escopo
@@ -876,11 +859,7 @@ public class Compiler {
 		}
 	}
 	
-	// // booleanValue := "true" | "false"
-	// private void booleanValue() {
-	// 	next();
-	// }
-
+	// asserStat := "assert" expr "," stringvalue
 	private Statement assertStat(){
 		AssertStat assertStat = new AssertStat(expr());
 		next();
@@ -889,30 +868,22 @@ public class Compiler {
 		next();
 
 		check(Token.LITERALSTRING, "A literal string expected after the ',' of the 'assert' statement");
-		assertStat.setString(lexer.getStringValue());
+		assertStat.setString(LiteralString());
 		next();
 
 		return null;
 	}
 	
 	private LiteralInt literalInt() {
-
-		LiteralInt e = null;
-
-		// the number value is stored in lexer.getToken().value as an object of
-		// Integer.
-		// Method intValue returns that value as an value of type int.
 		int value = lexer.getNumberValue();
-		lexer.nextToken();
+		next();
 		return new LiteralInt(value);
 	}
 	
-	private static boolean startExpr(Token token) {
-		return token == Token.FALSE || token == Token.TRUE
-				|| token == Token.NOT || token == Token.SELF
-				|| token == Token.LITERALINT || token == Token.SUPER
-				|| token == Token.LEFTPAR || token == Token.NULL
-				|| token == Token.ID || token == Token.LITERALSTRING;
+	private LiteralString LiteralString() {
+		String value = lexer.getStringValue();
+		next();
+		return new LiteralString(value);
 	}
 
 	// readExpr() := "In" "." [ "readInt" | "readString" ]
