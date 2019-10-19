@@ -13,10 +13,10 @@ public class StatementList{
         this.statList.add(newStat);
     }
 
-    public void genC(PW pw){
+    public void genJava(PW pw){
         for( Statement stat : this.statList ){
     		// pw.tab();
-            stat.genC(pw);
+            stat.genJava(pw);
         }
 	}
 }

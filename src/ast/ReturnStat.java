@@ -11,11 +11,11 @@ public class ReturnStat extends Statement{
         this.expr = expr;
     }
 
-    public void genC(PW pw){
+    public void genJava(PW pw){
         pw.print("\n");
         // pw.tab();
     	pw.print("return ");
-        this.expr.genC(pw);
+        this.expr.genJava(pw);
         pw.println(";");
 	}
 }

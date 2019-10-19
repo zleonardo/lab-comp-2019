@@ -27,7 +27,7 @@ public class PrimaryExpr extends Expr {
 		this.exprList = exprList;
 	}
 
-	public void genC( PW pw ) {
+	public void genJava( PW pw ) {
 		pw.printIdent("NULL");
 	}
 

@@ -13,7 +13,7 @@ public class IdList {
 		this.idList.add(id);
 	}
 
-	public void genC(PW pw){
+	public void genJava(PW pw){
         if(this.idList.size() > 0){
             // printa primeiro parametro
             pw.print(this.idList.get(0));

@@ -11,7 +11,7 @@ public class LiteralString extends Expr {
         this.literalString = literalString;
     }
     
-    public void genC( PW pw ) {
+    public void genJava( PW pw ) {
         pw.print(literalString);
     }
 

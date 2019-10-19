@@ -20,12 +20,12 @@ public class IfStat extends Statement{
         this.elsePart = elsePart;
     }
 
-    public void genC(PW pw){
+    public void genJava(PW pw){
         pw.print("if (");
-        this.condition.genC(pw);
+        this.condition.genJava(pw);
         pw.println("){");
         pw.add();
-        this.ifPart.genC(pw);
+        this.ifPart.genJava(pw);
         pw.sub();
         // pw.tab();
         pw.println("}");
@@ -34,7 +34,7 @@ public class IfStat extends Statement{
             // pw.tab();
             pw.println("else {");
             pw.add();
-            this.elsePart.genC(pw);
+            this.elsePart.genJava(pw);
             pw.sub();
             // pw.tab();
             pw.println("}");

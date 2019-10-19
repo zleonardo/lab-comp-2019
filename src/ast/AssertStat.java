@@ -16,11 +16,11 @@ public class AssertStat extends Statement{
         this.string = s;
     }
 
-    public void genC(PW pw){
+    public void genJava(PW pw){
     	pw.print("assert ");
-        this.expr.genC(pw);
+        this.expr.genJava(pw);
     	pw.print(" ");
-        this.string.genC(pw);
+        this.string.genJava(pw);
         pw.println(";");
 	}
 }

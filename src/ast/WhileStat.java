@@ -16,12 +16,12 @@ public class WhileStat extends Statement{
         this.whilePart = whilePart;
     }
 
-    public void genC(PW pw){
+    public void genJava(PW pw){
         pw.print("while (");
-        this.condition.genC(pw);
+        this.condition.genJava(pw);
         pw.println("){");
         pw.add();
-        this.whilePart.genC(pw);
+        this.whilePart.genJava(pw);
         pw.sub();
         // pw.tab();
         pw.println("}");

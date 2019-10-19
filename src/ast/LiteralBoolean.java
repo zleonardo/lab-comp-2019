@@ -12,7 +12,7 @@ public class LiteralBoolean extends Expr {
     }
 
     @Override
-	public void genC( PW pw ) {
+	public void genJava( PW pw ) {
     	if(value)
     		pw.print("true");
     	else

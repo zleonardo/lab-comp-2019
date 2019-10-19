@@ -31,7 +31,7 @@ public class Program {
 	public void genJava(PW pw) {
 	}
 
-	public void genC(PW pw) {
+	public void genJava(PW pw) {
 	}
 	
 	public ArrayList<TypeCianetoClass> getClassList() {

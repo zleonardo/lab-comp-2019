@@ -20,8 +20,8 @@ public class CompositeExpr extends Expr {
 		return left.getType();
 	}
 
-	public void genC(PW pw) {
-		left.genC(pw);
+	public void genJava(PW pw) {
+		left.genJava(pw);
 		if(oper == null)
 			return;
 		if(this.oper == Token.OR)
@@ -30,6 +30,6 @@ public class CompositeExpr extends Expr {
 			pw.print(" && ");
 		else
 			pw.print(" " + this.oper.toString() + " ");
-		right.genC(pw);
+		right.genJava(pw);
 	}
 }

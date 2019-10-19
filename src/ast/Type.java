@@ -23,7 +23,7 @@ abstract public class Type {
 
     abstract public String getCname();
 
-	//abstract public void genC(PW pw);
+	//abstract public void genJava(PW pw);
 
     private String name;
 }

@@ -16,12 +16,12 @@ public class RepeatStat extends Statement{
         this.condition = condition;
     }
 
-    public void genC(PW pw){
+    public void genJava(PW pw){
         pw.println("do {");
         pw.add();
-        this.whilePart.genC(pw);
+        this.whilePart.genJava(pw);
         pw.print("}while(");
-        this.condition.genC(pw);
+        this.condition.genJava(pw);
         pw.sub();
         // pw.tab();
         pw.println(")");

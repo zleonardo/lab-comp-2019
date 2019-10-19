@@ -24,7 +24,7 @@ public class Variable extends Statement{
         return this.name;
     }
 
-    public void genC(PW pw){
+    public void genJava(PW pw){
         pw.print(this.type.getCname());
         pw.print(" ");
         pw.print(name);

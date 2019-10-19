@@ -38,11 +38,11 @@ public class AssignExpr extends Statement{
 
 
     // REAPOVEITAR
-    public void genC(PW pw){
+    public void genJava(PW pw){
         // String assign
-        this.left.genC(pw);
+        this.left.genJava(pw);
         pw.print(" = ");
-        this.right.genC(pw);
+        this.right.genJava(pw);
         pw.println(";");
 	}
 }

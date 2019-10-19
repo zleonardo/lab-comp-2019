@@ -8,8 +8,7 @@ package comp;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import ast.*;
-import lexer.Lexer;
-import lexer.Token;
+import lexer.*;
 
 public class Compiler {
 
@@ -636,6 +635,8 @@ public class Compiler {
 				Token relation = lexer.token;
 				next();
 				ce = new CompositeExpr(ce,  relation, simpleExpr());
+			default:
+				break;
 		}
 		
 		return ce;

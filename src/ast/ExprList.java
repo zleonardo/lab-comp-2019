@@ -14,17 +14,17 @@ public class ExprList{
         this.exprList.add(expr);
     }
 
-    public void genC(PW pw){
+    public void genJava(PW pw){
         if(this.exprList.size() > 0){
             // printa primeiro parametro
             Expr v = this.exprList.get(0);
-            v.genC(pw);
+            v.genJava(pw);
 
             // printa demais parametros separados por virgula
             for(int i = 1; i < this.exprList.size(); i++){
                 pw.print(", ");
                 v = this.exprList.get(i);
-                v.genC(pw);
+                v.genJava(pw);
             }
         }
 	}
