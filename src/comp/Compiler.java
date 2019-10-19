@@ -700,7 +700,7 @@ public class Compiler {
 	
 	// signal := "+" | "-"
 	private Token signal() {
-		Token signal = lexer.Token;
+		Token signal = lexer.token;
 		next();
 		return signal;
 	}
@@ -715,10 +715,10 @@ public class Compiler {
                 return basicValue();
             case LEFTPAR:
                 next();
-                Expr Expr = new ExprInParentheses(expr());
+                Expr expr = new ExprInParentheses(expr());
                 check(Token.RIGHTPAR, "')' was expected");
                 next();
-				return factor;
+				return expr;
             case NOT:
             	next();
 				return new NegationFactor(factor());
