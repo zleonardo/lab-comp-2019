@@ -4,7 +4,7 @@
 */
 
 package ast;
-import Lexer.*;
+import lexer.Token;
 
 public class CompositeExpr extends Expr {
 	Expr left, right = null;
@@ -23,7 +23,7 @@ public class CompositeExpr extends Expr {
 	public void genC(PW pw) {
 		left.genC(pw);
 		if(oper == null)
-			return
+			return;
 		if(this.oper == Token.OR)
 			pw.print(" || ");
 		else if(this.oper == Token.AND)

@@ -19,6 +19,6 @@ public class NegationFactor extends Expr {
 
 	public void genC(PW pw){
 		pw.print("! ");
-		this.expr.genC;
+		this.expr.genC(pw);
 	}
 }

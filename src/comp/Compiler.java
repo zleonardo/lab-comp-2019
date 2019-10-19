@@ -434,7 +434,7 @@ public class Compiler {
 				break;
 			case BREAK:
 				statement = breakStat();
-			breakStat	break;
+				break;
 			case SEMICOLON:
 				next();
 				break;
@@ -621,9 +621,9 @@ public class Compiler {
 	}
 
 	// expr := SimpleExpression [ Relation SimpleExpr ]
-	private CompositeExpr expr() {
+	private Expr expr() {
 		// CompositeExpr left = simpleExpr();
-		CompositeExpr ce = simpleExpr();
+		Expr ce = simpleExpr();
 
 		switch(lexer.token){
 			// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
@@ -642,8 +642,8 @@ public class Compiler {
 	}
 	
 	// simpleExpr := SumSubExpr { "++" SumSubExpr }
-	private CompositeExpr simpleExpr() {
-		CompositeExpr ce = sumSubExpr();
+	private Expr simpleExpr() {
+		Expr ce = sumSubExpr();
 
 		while(lexer.token == Token.PLUSPLUS){
 			next();
@@ -655,8 +655,8 @@ public class Compiler {
 	}
 	
 	// SumSubExpr := Term { lowOperator Term }
-	private CompositeExpr sumSubExpr() {
-		CompositeExpr ce = term();
+	private Expr sumSubExpr() {
+		Expr ce = term();
 
 		// lowOperator := "+" | "-" | "||"
 		while(lexer.token == Token.PLUS || lexer.token == Token.MINUS || lexer.token == Token.OR){
@@ -670,8 +670,8 @@ public class Compiler {
 	}
 	
 	// term := signalFactor { highOperator signalFactor }
-	private CompositeExpr term() {
-		CompositeExpr ce = signalFactor();
+	private Expr term() {
+		Expr ce = signalFactor();
 
 		// highOperator := "*" | "/" | "&&"
 		while(lexer.token == Token.MULT || lexer.token == Token.DIV || lexer.token == Token.AND){
@@ -868,7 +868,7 @@ public class Compiler {
 		next();
 
 		check(Token.LITERALSTRING, "A literal string expected after the ',' of the 'assert' statement");
-		assertStat.setString(LiteralString());
+		assertStat.setString(literalString());
 		next();
 
 		return null;
@@ -880,7 +880,7 @@ public class Compiler {
 		return new LiteralInt(value);
 	}
 	
-	private LiteralString LiteralString() {
+	private LiteralString literalString() {
 		String value = lexer.getStringValue();
 		next();
 		return new LiteralString(value);

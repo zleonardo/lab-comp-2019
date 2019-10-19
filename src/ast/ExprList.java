@@ -8,7 +8,7 @@ package ast;
 import java.util.ArrayList;
 
 public class ExprList{
-    private ArrayList<Expr> ExprList = new ArrayList<Expr>();
+    private ArrayList<Expr> exprList = new ArrayList<Expr>();
 
     public void addExpr(Expr expr){
         this.exprList.add(expr);
@@ -18,13 +18,13 @@ public class ExprList{
         if(this.exprList.size() > 0){
             // printa primeiro parametro
             Expr v = this.exprList.get(0);
-            v.genC();
+            v.genC(pw);
 
             // printa demais parametros separados por virgula
             for(int i = 1; i < this.exprList.size(); i++){
                 pw.print(", ");
                 v = this.exprList.get(i);
-                v.genC();
+                v.genC(pw);
             }
         }
 	}

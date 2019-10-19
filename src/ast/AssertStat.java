@@ -6,13 +6,13 @@ package ast;
 
 public class AssertStat extends Statement{
     Expr expr;
-    String string;
+    LiteralString string;
 
     public AssertStat(Expr expr){
         this.expr = expr;
     }
 
-    public void setString(String s){
+    public void setString(LiteralString s){
         this.string = s;
     }
 

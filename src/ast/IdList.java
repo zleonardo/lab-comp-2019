@@ -13,8 +13,16 @@ public class IdList {
 		this.idList.add(id);
 	}
 
-	public void genJava(PW pw){
+	public void genC(PW pw){
+        if(this.idList.size() > 0){
+            // printa primeiro parametro
+            pw.print(this.idList.get(0));
 
+            // printa demais parametros separados por virgula
+            for(int i = 1; i < this.idList.size(); i++){
+                pw.print(", ");
+                pw.print(this.idList.get(i));
+            }
+        }
 	}
-
 }

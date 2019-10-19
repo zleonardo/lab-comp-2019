@@ -23,11 +23,12 @@ public class LocalDecStat extends Statement{
 
 	public void genC(PW pw){
 		// Type IdList [ "=" Expr ]
-		this.type.genC();
-		this.idList.genC();
+		//this.type.genC(pw);
+		pw.println(" TYPE ");
+		this.idList.genC(pw);
 		if(this.expr != null){
 			pw.println(" = ");
-			this.expr.genC();
+			this.expr.genC(pw);
 		}
 	}
 }

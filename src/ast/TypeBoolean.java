@@ -13,5 +13,4 @@ public class TypeBoolean extends Type {
    public String getCname() {
       return "int";
    }
-
 }

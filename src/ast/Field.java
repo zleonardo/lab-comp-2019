@@ -12,6 +12,10 @@ public class Field {
 		this.type = type;
 		this.idList = idList;
 	}
+	
+	public Type getType() {
+		return this.type;
+	}
 
 	public void genJava(PW pw){
 		

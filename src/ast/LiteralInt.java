@@ -21,6 +21,11 @@ public class LiteralInt extends Expr {
     public Type getType() {
         return Type.intType;
     }
+
+    @Override
+	public void genC( PW pw ) {
+    	pw.print(Integer.toString(this.value));
+    }
     
     private int value;
 }

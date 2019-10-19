@@ -4,6 +4,7 @@
 */
 
 package ast;
+import lexer.Token;
 
 public class PrimaryExpr extends Expr {
 	private Token scope = null;
