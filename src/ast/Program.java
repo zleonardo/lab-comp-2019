@@ -28,8 +28,8 @@ public class Program {
 		this.mainJavaClassName = mainJavaClassName;
 	}
 	
-	public void genJava(PW pw) {
-	}
+	/*public void genJava(PW pw) {
+	}*/
 
 	public void genJava(PW pw) {
 	}

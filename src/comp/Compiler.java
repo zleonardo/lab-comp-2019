@@ -127,22 +127,26 @@ public class Compiler {
 					lexer.token == Token.ID ) {
 				switch ( lexer.token ) {
 				case LITERALINT:
-					metaobjectParamList.add(literalInt());
+					metaobjectParamList.add(lexer.getNumberValue());
 					break;
 				case LITERALSTRING:
-					metaobjectParamList.add(literalString());
+					metaobjectParamList.add(lexer.getLiteralStringValue());
 					break;
 				case ID:
 					metaobjectParamList.add(lexer.getStringValue());
 				}
 				next();
-				if ( lexer.token == Token.COMMA )
+				if ( lexer.token == Token.COMMA ) {
 					next();
-				else
+				}
+				else {
 					break;
+				}
 			}
 			if ( lexer.token != Token.RIGHTPAR )
+			{
 				error("')' expected after annotation with parameters");
+			}
 			else {
 				getNextToken = true;
 			}
@@ -308,8 +312,11 @@ public class Compiler {
 		
 		// le func
 		next();
+		
+		//System.out.println(lexer.token);
 
-		if ( lexer.token == Token.ID ) {
+		// VERIFICAR ESSE PRINT AQUI!!! ARQUIVO GER21.ci para verificar func print
+		if ( lexer.token == Token.ID || lexer.token == Token.PRINT) {
 			// unary method
 			method = new Method(lexer.getStringValue());
 			next();
@@ -318,9 +325,7 @@ public class Compiler {
 			method = new Method(lexer.getStringValue());
 			next();
 
-			// keyword method. It has parameters
 			formalParamDec();
-			//??
 		}
 		else {
 			error("An identifier or identifer: was expected after 'func'");
@@ -400,7 +405,7 @@ public class Compiler {
 
 		// NAO ENTENDI ESSE WHILE
 		  // only '}' is necessary in this test
-		while (lexer.token != Token.RIGHTCURBRACKET){
+		while (lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.UNTIL){
 			statList.addStat(statement());
 		}
 
@@ -415,7 +420,7 @@ public class Compiler {
 	private Statement statement() {
 		Statement statement = null;
 		boolean checkSemiColon = true;
-
+		
 		switch (lexer.token) {
 			case ASSIGN:
 				statement = assignExpr();
@@ -434,9 +439,9 @@ public class Compiler {
 			case BREAK:
 				statement = breakStat();
 				break;
-			case SEMICOLON:
+			/*case SEMICOLON:
 				next();
-				break;
+				break;*/
 			case REPEAT:
 				statement = repeatStat();
 				break;
@@ -451,7 +456,7 @@ public class Compiler {
 					printStat();
 				}
 				else {
-					expr();
+					assignExpr();
 				}
 		}
 		if ( checkSemiColon ) {
@@ -520,7 +525,7 @@ public class Compiler {
 
 		// Esse while o zé colocou, mas nao sei ainda o porque
 		// while ( lexer.token != Token.UNTIL && lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
-			RepeatStat repeatStat = new RepeatStat(statementList());
+		RepeatStat repeatStat = new RepeatStat(statementList());
 		// }
 		check(Token.UNTIL, "missing keyword 'until'");
 		next();
@@ -635,8 +640,9 @@ public class Compiler {
 				Token relation = lexer.token;
 				next();
 				ce = new CompositeExpr(ce,  relation, simpleExpr());
+			break;
 			default:
-				break;
+				//break;
 		}
 		
 		return ce;
@@ -700,9 +706,11 @@ public class Compiler {
 	
 	// factor := basicValue | "(" Expr ")" | "!" factor | "nil" | objectCreation | primaryExpr 
 	private Expr factor() {
+		
 		switch (lexer.token) {
 			// basicValue := "IntValue" | "BooleanValue" | "StringValue"
             case LITERALINT:
+            	next();
 				return literalInt();
             case LITERALSTRING:
 				next();
@@ -758,6 +766,8 @@ public class Compiler {
 		PrimaryExpr primaryExpr = new PrimaryExpr();
 
 		// escopo
+		
+		
 		if(lexer.token == Token.SUPER){
 			primaryExpr.setScope(Token.SUPER);
 			next();
@@ -776,9 +786,26 @@ public class Compiler {
 		}
 
 		//primeiro id
-		if(lexer.token == Token.ID){
+		
+		if(lexer.token == Token.IN) {
+			readExpr();
+		}else if(lexer.token == Token.ID){
 			primaryExpr.setFirstId(lexer.getStringValue());
 			next();
+			if(lexer.token == Token.DOT) {
+				next();
+				if(lexer.token == Token.NEW) {
+					next();
+				}else if(lexer.token == Token.ID) {
+					next();
+					primaryExpr.setSecondId(lexer.getStringValue());	
+				}else if(lexer.token == Token.IDCOLON) {
+					primaryExpr.setSecondId(lexer.getStringValue());
+					next();
+					primaryExpr.setExprList(exprList());
+				}
+			}
+			return primaryExpr;
 		}
 		else if(lexer.token == Token.IDCOLON){
 			primaryExpr.setFirstId(lexer.getStringValue());
@@ -788,13 +815,20 @@ public class Compiler {
 		}
 		else{
 			error("Id or IdColon was expected");
-			return primaryExpr;
+			//return primaryExpr;
 		}
 
 		// segundo id
+		/*
 		if(lexer.token == Token.ID){
 			primaryExpr.setSecondId(lexer.getStringValue());
 			next();
+			if(lexer.token == Token.DOT) {
+				next();
+				if(lexer.token == Token.NEW) {
+					next();
+				}
+			}
 			return primaryExpr;
 		}
 		else if(lexer.token == Token.IDCOLON){
@@ -805,8 +839,11 @@ public class Compiler {
 		}
 		else{
 			error("Id or IdColon was expected");
-			return primaryExpr;
+			//return primaryExpr;
 		}
+		*/
+		
+		return primaryExpr;
 	}
 	
 	// fieldDec := "var" Type IdList [ ";" ]
@@ -817,9 +854,12 @@ public class Compiler {
 		Type type = type();
 		
 		IdList idList = idList();
+		
 
-		check(Token.SEMICOLON, "';' expected");
-		next();
+		if(lexer.token == Token.SEMICOLON) {
+			next();
+		}
+		
 
 		return new Field(type, idList);
 	}
@@ -877,22 +917,28 @@ public class Compiler {
 	
 	private LiteralInt literalInt() {
 		int value = lexer.getNumberValue();
-		next();
+		//next();
 		return new LiteralInt(value);
 	}
 	
 	private LiteralString literalString() {
 		String value = lexer.getStringValue();
-		next();
+		//next();
 		return new LiteralString(value);
 	}
 
 	// readExpr() := "In" "." [ "readInt" | "readString" ]
 	private void readExpr() {
+		
 		if(lexer.token != Token.IN){
 			error("'In' was expected");
 		}
+		
+		next();
+		
 		check(Token.DOT, "'.' is missing after 'In'");
+		
+		next();
 
 		if(lexer.token == Token.READINT){
 			// voltar int
