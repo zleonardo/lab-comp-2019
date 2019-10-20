@@ -70,8 +70,9 @@ public class Compiler {
 				thereWasAnError = true;
 			}
 
-		// VERIFICAR SE TEM UMA CLASSE 'PROGRAM' QUE É OBRIGATÓRIA
-			// VER ISSO NA PARTE SEMANTICA
+			if (symbolTable.returnFunction("Program") == null) {
+				error("Error: Missing Program function");
+			}
 
 		}
 		if ( !thereWasAnError && lexer.token != Token.EOF ) {
@@ -194,6 +195,7 @@ public class Compiler {
 	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList "end"
 	private TypeCianetoClass classDec() {
 		MemberList memberList = null;
+		TypeCianetoClass classObj = null;
 
 		if ( lexer.token == Token.ID && lexer.getStringValue().equals("open") ) {
 			// DECLARA OPEN QUANDO UMA CLASSE É HERDADA DE OUTRA
@@ -204,24 +206,46 @@ public class Compiler {
 		next();
 		
 		check(Token.ID, "Identifier expected");
-		TypeCianetoClass classObj = new TypeCianetoClass(lexer.getStringValue());
-		next();
-
-		if ( lexer.token == Token.EXTENDS ) {
+		
+		// Verifica se existe uma classe com o mesmo nome
+		if(symbolTable.returnClass(lexer.getStringValue()) == null) {
+			
+			//TEM QUE CHECAR SE A CLASSE COM UM MESMO NOME JA EXISTE E COLOCAR NO SYMBOLTABLE CLASSES
+			
+			classObj = new TypeCianetoClass(lexer.getStringValue());
+			
+			//Insere a classe no symboltable
+			symbolTable.putClass(lexer.getStringValue(), classObj);
+			
 			next();
+		
+			if ( lexer.token == Token.EXTENDS ) {
+				next();
 
-			check(Token.ID, "Identifier expected");
-			String superclassName = lexer.getStringValue();
-			// falta buscar o objeto da super class, e adiciona-lo a classe
-			// classObj.setSuperClass(superClass);
-			next();
+				check(Token.ID, "Identifier expected");
+				
+				//TEM QUE VERIFICAR SE A CLASSE EXTENDIDA TEM A PALAVRA OPEN EM SUA DECLARACAO
+				
+				String superclassName = lexer.getStringValue();
+				// VERIFICAR ISSO AQUI!!!
+				// falta buscar o objeto da super class, e adiciona-lo a classe
+				// classObj.setSuperClass(superClass);
+				next();
+			}
+
+			memberList = memberList();
+			classObj.setMemberList(memberList);
+			
+		}else {
+			error("Error: Class " + lexer.getStringValue() + "has already been declared");
 		}
-
-		memberList = memberList();
-		classObj.setMemberList(memberList);
 		
 		check(Token.END, "'end' expected");
 		next();
+		
+		//Limpa a hash das variaveis locais
+		//Sepa que tem que limpar as funcoes. VERIFICAR!
+		symbolTable.resetLocal();
 
 		return classObj;
 	}
@@ -232,8 +256,6 @@ public class Compiler {
 		Method method;
 		
 		while ( true ) {
-			// tem que verificar se no qualifier volta algo ou não pq é opcional
-			// e colocar na ast
 			
 			String qualifier = qualifier();
 			
@@ -253,6 +275,9 @@ public class Compiler {
 				break;
 			}
 		}
+		
+		//VERIFICAR SE NA CLASSE PROGRAM TEM A FUNCAO RUN. OBRIGATORIO!!!
+		
 		return memberList;
 	}
 
@@ -313,34 +338,42 @@ public class Compiler {
 		// le func
 		next();
 		
-		//System.out.println(lexer.token);
+		//Verificar se existe ja uma funcao com o mesmo nome
+		if(symbolTable.returnFunction(lexer.getStringValue()) == null) {
+			// VERIFICAR ESSE PRINT AQUI!!! ARQUIVO GER21.ci para verificar func print
+			if ( lexer.token == Token.ID || lexer.token == Token.PRINT) {
+				// unary method
+				method = new Method(lexer.getStringValue());
+				symbolTable.putFunction(lexer.getStringValue(), method);
+				next();
+			}
+			else if ( lexer.token == Token.IDCOLON ) {
+				method = new Method(lexer.getStringValue());
+				symbolTable.putFunction(lexer.getStringValue(), method);
+				next();
 
-		// VERIFICAR ESSE PRINT AQUI!!! ARQUIVO GER21.ci para verificar func print
-		if ( lexer.token == Token.ID || lexer.token == Token.PRINT) {
-			// unary method
-			method = new Method(lexer.getStringValue());
-			next();
-		}
-		else if ( lexer.token == Token.IDCOLON ) {
-			method = new Method(lexer.getStringValue());
+				formalParamDec();
+			}
+			else {
+				error("An identifier or identifer: was expected after 'func'");
+			}
+			if ( lexer.token == Token.MINUS_GT ) {
+				// method declared a return type
+				next();
+				type();
+			}
+			
+			check(Token.LEFTCURBRACKET, "'{' expected");
 			next();
 
-			formalParamDec();
+			statementList();
+			check(Token.RIGHTCURBRACKET, "'}' expected");
 		}
 		else {
-			error("An identifier or identifer: was expected after 'func'");
+			error("Error: Function " + lexer.getStringValue() + "has already been declared");
 		}
-		if ( lexer.token == Token.MINUS_GT ) {
-			// method declared a return type
-			next();
-			type();
-		}
-		
-		check(Token.LEFTCURBRACKET, "'{' expected");
-		next();
 
-		statementList();
-		check(Token.RIGHTCURBRACKET, "'}' expected");
+		
 		next();
 
 		return method;
@@ -503,16 +536,29 @@ public class Compiler {
 	// idList := Id { "," Id } 
 	private IdList idList() {
 		IdList idlist = new IdList();
-
-		check(Token.ID, "A variable name was expected");
-		idlist.add(lexer.getStringValue());
-		next();
-
-		while ( lexer.token == Token.COMMA ) {
-			next();
+		
+		//Verifica se ja existe uma variavel
+		if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
 			check(Token.ID, "A variable name was expected");
 			idlist.add(lexer.getStringValue());
+			symbolTable.putVariable(lexer.getStringValue(), idlist);
 			next();
+
+			while ( lexer.token == Token.COMMA ) {
+				next();
+				if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
+					check(Token.ID, "A variable name was expected");
+					idlist.add(lexer.getStringValue());
+					symbolTable.putVariable(lexer.getStringValue(), idlist);
+					next();
+				}
+				else {
+					error("Error: Variable " + lexer.getStringValue() + "has already been declared");
+				}
+			}
+		}
+		else {
+			error("Error: Variable " + lexer.getStringValue() + "has already been declared");
 		}
 
 		return idlist;
