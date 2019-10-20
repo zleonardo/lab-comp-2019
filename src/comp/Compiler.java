@@ -580,8 +580,13 @@ public class Compiler {
 		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END && lexer.token != Token.ELSE ) {
 			statement();
 		}
+		
 		check(Token.RIGHTCURBRACKET, "'}' was expected");
+		
+		next();
+		
 		if ( lexer.token == Token.ELSE ) {
+			
 			next();
 			check(Token.LEFTCURBRACKET, "'{' expected after 'else'");
 			next();
@@ -589,8 +594,9 @@ public class Compiler {
 				statement();
 			}
 			check(Token.RIGHTCURBRACKET, "'}' was expected");
+			next();
 		}
-		next();
+		
 
 		return ifStat;
 	}
@@ -789,14 +795,14 @@ public class Compiler {
 		
 		if(lexer.token == Token.IN) {
 			readExpr();
-		}else if(lexer.token == Token.ID){
+		}else if(lexer.token == Token.ID|| lexer.token == Token.PRINT){
 			primaryExpr.setFirstId(lexer.getStringValue());
 			next();
 			if(lexer.token == Token.DOT) {
 				next();
 				if(lexer.token == Token.NEW) {
 					next();
-				}else if(lexer.token == Token.ID) {
+				}else if(lexer.token == Token.ID || lexer.token == Token.PRINT) {
 					next();
 					primaryExpr.setSecondId(lexer.getStringValue());	
 				}else if(lexer.token == Token.IDCOLON) {
@@ -902,8 +908,10 @@ public class Compiler {
 	
 	// asserStat := "assert" expr "," stringvalue
 	private Statement assertStat(){
-		AssertStat assertStat = new AssertStat(expr());
+		
 		next();
+		
+		AssertStat assertStat = new AssertStat(expr());
 		
 		check(Token.COMMA,"',' expected after the expression of the 'assert' statement");
 		next();
