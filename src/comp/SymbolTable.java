@@ -11,17 +11,18 @@ import java.util.Hashtable;
 public class SymbolTable {
 	private Hashtable<String, Object> classesTable;
     private Hashtable<String, Object> functionTable;
-    private Hashtable<String, Object> variables;
+    private Hashtable<String, Object> variablesTable;
 
     public SymbolTable() {
         this.classesTable = new Hashtable<String, Object>();
         this.functionTable = new Hashtable<String, Object>();
-        this.variables = new Hashtable<String, Object>();
+        this.variablesTable = new Hashtable<String, Object>();
     }
 
     // Limpa tabela de variáveis locais
     public void resetLocal() {
-        this.variables.clear();
+        this.variablesTable.clear();
+        this.functionTable.clear();
     }
 
     public Object returnClass(String chave) {
@@ -33,7 +34,7 @@ public class SymbolTable {
     }
     
     public Object returnVariable(String chave) {
-        return this.variables.get(chave);
+        return this.variablesTable.get(chave);
     }
 
     public void putClass(String chave, Object valor) {
@@ -45,6 +46,6 @@ public class SymbolTable {
     }
     
     public void putVariable(String chave, Object valor) {
-        this.variables.put(chave, valor);
+        this.variablesTable.put(chave, valor);
     }
 }

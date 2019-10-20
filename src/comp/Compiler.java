@@ -70,11 +70,18 @@ public class Compiler {
 				thereWasAnError = true;
 			}
 
-			if (symbolTable.returnFunction("Program") == null) {
+		}
+		
+		// Verifica se existe uma funcao Program
+		try {
+			if (symbolTable.returnFunction("Program") != null) {
 				error("Error: Missing Program function");
 			}
-
+		} catch (CompilerError e) {
+			thereWasAnError = true;
 		}
+		
+		
 		if ( !thereWasAnError && lexer.token != Token.EOF ) {
 			try {
 				error("End of file expected");
@@ -340,6 +347,7 @@ public class Compiler {
 		
 		//Verificar se existe ja uma funcao com o mesmo nome
 		if(symbolTable.returnFunction(lexer.getStringValue()) == null) {
+		
 			// VERIFICAR ESSE PRINT AQUI!!! ARQUIVO GER21.ci para verificar func print
 			if ( lexer.token == Token.ID || lexer.token == Token.PRINT) {
 				// unary method
@@ -370,7 +378,7 @@ public class Compiler {
 			check(Token.RIGHTCURBRACKET, "'}' expected");
 		}
 		else {
-			error("Error: Function " + lexer.getStringValue() + "has already been declared");
+			error("Error: Function " + lexer.getStringValue() + " has already been declared");
 		}
 
 		
