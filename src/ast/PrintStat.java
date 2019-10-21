@@ -7,7 +7,7 @@ package ast;
 import lexer.Token;
 
 class PrintStat extends Statement{
-    ExprList exprList;;
+    ExprList exprList;
     Token printType;
 
     public PrintStat(Token printType){
@@ -19,5 +19,9 @@ class PrintStat extends Statement{
     }
 
     public void genJava(PW pw){
+        if(printType == Token.PRINT)
+			pw.print(" -PRINT- ");
+		else if(printType == Token.PRINTLN)
+			pw.print(" -PRINTLS- ");
 	}
 }
