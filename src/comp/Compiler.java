@@ -665,7 +665,7 @@ public class Compiler {
 	}
 
 	// Printstat ::= "Out" "." ( "print:" | "println:" ) expr { "," expr }
-	private Statement printStat() {
+	private void printStat() {
 		// lê "Out"
 		next();
 
@@ -829,7 +829,7 @@ public class Compiler {
 						Id "." Id |
 						Id "." IdColon ExprList
 	*/	
-	private PrimaryExpr primaryExpr() {
+	private Expr primaryExpr() {
 		PrimaryExpr primaryExpr = new PrimaryExpr();
 
 		// escopo

@@ -19,10 +19,5 @@ class PrintStat extends Statement{
     }
 
     public void genJava(PW pw){
-        pw.print("\n");
-        // pw.tab();
-    	pw.print("return ");
-        this.expr.genJava(pw);
-        pw.println(";");
 	}
 }
