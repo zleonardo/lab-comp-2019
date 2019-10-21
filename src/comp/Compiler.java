@@ -7,8 +7,38 @@ package comp;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import ast.*;
-import lexer.*;
+
+import ast.AssertStat;
+import ast.AssignExpr;
+import ast.BreakStat;
+import ast.CompositeExpr;
+import ast.Expr;
+import ast.ExprInParentheses;
+import ast.ExprList;
+import ast.Field;
+import ast.IdList;
+import ast.IfStat;
+import ast.LiteralBoolean;
+import ast.LiteralInt;
+import ast.LiteralString;
+import ast.LocalDecStat;
+import ast.MemberList;
+import ast.MetaobjectAnnotation;
+import ast.Method;
+import ast.NegationFactor;
+import ast.NullExpr;
+import ast.ParamDec;
+import ast.PrimaryExpr;
+import ast.Program;
+import ast.RepeatStat;
+import ast.ReturnStat;
+import ast.Statement;
+import ast.StatementList;
+import ast.Type;
+import ast.TypeCianetoClass;
+import ast.WhileStat;
+import lexer.Lexer;
+import lexer.Token;
 
 public class Compiler {
 
@@ -444,8 +474,6 @@ public class Compiler {
 	private StatementList statementList() {
 		StatementList statList = new StatementList();
 
-		// NAO ENTENDI ESSE WHILE
-		  // only '}' is necessary in this test
 		while (lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.UNTIL){
 			statList.addStat(statement());
 		}
@@ -480,9 +508,9 @@ public class Compiler {
 			case BREAK:
 				statement = breakStat();
 				break;
-			/*case SEMICOLON:
-				next();
-				break;*/
+			// case SEMICOLON:
+			// 	next();
+			// 	break;
 			case REPEAT:
 				statement = repeatStat();
 				break;
@@ -501,7 +529,7 @@ public class Compiler {
 				}
 		}
 		if ( checkSemiColon ) {
-			check(Token.SEMICOLON, "';' expected");
+			check(Token.SEMICOLON, "';' missing");
 			next();
 			
 		}
@@ -561,12 +589,12 @@ public class Compiler {
 					next();
 				}
 				else {
-					error("Error: Variable " + lexer.getStringValue() + "has already been declared");
+					error("Missing identifier");
 				}
 			}
 		}
 		else {
-			error("Error: Variable " + lexer.getStringValue() + "has already been declared");
+			error("Missing identifier");
 		}
 
 		return idlist;
@@ -581,7 +609,7 @@ public class Compiler {
 		// while ( lexer.token != Token.UNTIL && lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
 		RepeatStat repeatStat = new RepeatStat(statementList());
 		// }
-		check(Token.UNTIL, "missing keyword 'until'");
+		check(Token.UNTIL, "'until' expected");
 		next();
 
 		repeatStat.setCondition(expr());
@@ -627,7 +655,7 @@ public class Compiler {
 		
 		IfStat ifStat = new IfStat(expr());
 		
-		check(Token.LEFTCURBRACKET, "'{' expected after the 'if' expression");
+		check(Token.LEFTCURBRACKET, "'{' expected");
 		next();
 		
 		// nao era pra ser statementlist?
@@ -826,8 +854,6 @@ public class Compiler {
 		PrimaryExpr primaryExpr = new PrimaryExpr();
 
 		// escopo
-		
-		
 		if(lexer.token == Token.SUPER){
 			primaryExpr.setScope(Token.SUPER);
 			next();
@@ -1010,6 +1036,8 @@ public class Compiler {
 			//voltar string
 			next();
 		}
+		else
+			error("Command 'In.' without arguments");
 	}
 
 	private SymbolTable		symbolTable;

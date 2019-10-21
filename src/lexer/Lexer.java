@@ -123,10 +123,10 @@ public class Lexer {
                 try {
                    numberValue = Integer.valueOf(number.toString()).intValue();
                 } catch ( NumberFormatException e ) {
-                   error.showError("Number out of limits");
+                   error.showError("literal int out of limits");
                 }
                 if ( numberValue > MaxValueInteger )
-                   error.showError("Number out of limits");
+                   error.showError("literal int out of limits");
             }
             else {
                 tokenPos++;
@@ -265,7 +265,7 @@ public class Lexer {
                        token = Token.LITERALSTRING;
                        break;
                     default :
-                      error.showError("Invalid Character: '" + ch + "'", false);
+                      error.showError("Unknown character: '" + ch + "'", false);
                 }
             }
           }
