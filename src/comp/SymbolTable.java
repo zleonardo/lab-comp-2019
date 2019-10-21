@@ -20,8 +20,12 @@ public class SymbolTable {
     }
 
     // Limpa tabela de variáveis locais
-    public void resetLocal() {
+
+    public void resetVariables(){
         this.variablesTable.clear();
+    }
+
+    public void resetLocal() {
         this.functionTable.clear();
     }
 

@@ -6,6 +6,7 @@
 package lexer;
 
 import java.util.Hashtable;
+
 import comp.ErrorSignaller;
 
 public class Lexer {
@@ -24,7 +25,7 @@ public class Lexer {
       }
 
 
-    private static final int MaxValueInteger = 32767;
+    private static final int MaxValueInteger = 2147483647;
       // contains the keywords
     static private Hashtable<String, Token> keywordsTable;
 
@@ -73,7 +74,7 @@ public class Lexer {
                 tokenPos++;
              }
              if ( ch == '\0' )
-                error.showError( "Comment opened and not closed",
+                error.showError( "Comment started in line " + lineNumberStartComment + " was not closed",
                       getLine(posStartComment), lineNumberStartComment);
              else
                 tokenPos += 2;
@@ -229,7 +230,7 @@ public class Lexer {
                     	token = Token.ANNOT;
                     	break;
                     case '_' :
-                      error.showError("'_' cannot start an indentifier");
+                      error.showError("Identifier starting with underscore");
                       break;
                     case '"' :
                        StringBuffer s = new StringBuffer();
@@ -265,7 +266,7 @@ public class Lexer {
                        token = Token.LITERALSTRING;
                        break;
                     default :
-                      error.showError("Unknown character: '" + ch + "'", false);
+                      error.showError("Unknown character", false);
                 }
             }
           }

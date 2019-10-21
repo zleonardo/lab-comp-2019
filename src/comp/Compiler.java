@@ -27,11 +27,14 @@ import ast.MetaobjectAnnotation;
 import ast.Method;
 import ast.NegationFactor;
 import ast.NullExpr;
+import ast.NullStat;
 import ast.ParamDec;
 import ast.PrimaryExpr;
 import ast.Program;
+import ast.ReadExpr;
 import ast.RepeatStat;
 import ast.ReturnStat;
+import ast.SignalFactor;
 import ast.Statement;
 import ast.StatementList;
 import ast.Type;
@@ -411,7 +414,8 @@ public class Compiler {
 			error("Error: Function " + lexer.getStringValue() + " has already been declared");
 		}
 
-		
+		symbolTable.resetVariables();
+
 		next();
 
 		return method;
@@ -448,28 +452,6 @@ public class Compiler {
 		return new ParamDec(id, type);
 	}
 	
-	// ESSA GRAMATICA NAO É CHAMADA POR NENHUMA OUTRA??
-	// compStatement := "{" { Statement } "}"
-	private void compStatement() {
-
-		if (lexer.token != Token.LEFTCURBRACKET){
-			error("'{' was expected");
-		}
-		next();
-
-		// NAO SEI SE TA CERTO PQ TE O DEFAULT NO STATEMENT QUE PODE RECEBER OUTRAS COISAS
-		while (lexer.token == Token.IF || lexer.token == Token.WHILE || lexer.token == Token.RETURN || 
-			   lexer.token == Token.BREAK || lexer.token == Token.REPEAT || lexer.token == Token.VAR ||
-			   lexer.token == Token.ASSERT){
-			statement();
-		}
-
-		if (lexer.token != Token.RIGHTCURBRACKET){
-			error("'}' was expected");
-		}
-		next();
-	}
-
 	// statementList := { Statement }
 	private StatementList statementList() {
 		StatementList statList = new StatementList();
@@ -480,7 +462,6 @@ public class Compiler {
 
 		return statList;
 	}
-
 	
 /* statement := AssignExpr ";" | IfStat | WhileStat | ReturnStat ";" |
                 PrintStat ";" | "break" ";" | ";" |
@@ -508,9 +489,9 @@ public class Compiler {
 			case BREAK:
 				statement = breakStat();
 				break;
-			// case SEMICOLON:
-			// 	next();
-			// 	break;
+			case SEMICOLON:
+				next();
+				return new NullStat();
 			case REPEAT:
 				statement = repeatStat();
 				break;
@@ -575,7 +556,7 @@ public class Compiler {
 		
 		//Verifica se ja existe uma variavel
 		if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
-			check(Token.ID, "A variable name was expected");
+			check(Token.ID, "Identifier expected");
 			idlist.add(lexer.getStringValue());
 			symbolTable.putVariable(lexer.getStringValue(), idlist);
 			next();
@@ -583,7 +564,7 @@ public class Compiler {
 			while ( lexer.token == Token.COMMA ) {
 				next();
 				if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
-					check(Token.ID, "A variable name was expected");
+					check(Token.ID, "Identifier expected");
 					idlist.add(lexer.getStringValue());
 					symbolTable.putVariable(lexer.getStringValue(), idlist);
 					next();
@@ -684,7 +665,7 @@ public class Compiler {
 	}
 
 	// Printstat ::= "Out" "." ( "print:" | "println:" ) expr { "," expr }
-	private void printStat() {
+	private Statement printStat() {
 		// lê "Out"
 		next();
 
@@ -785,16 +766,14 @@ public class Compiler {
 		if(lexer.token == Token.PLUS || lexer.token == Token.MINUS){
 			Token signal = lexer.token;
 			next();
+			return new SignalFactor(signal, factor());
 		}
-		
-		// NAO SEI COMO FAZER AINDA
-		// melhor ver quando for fazer a semantica
-		return factor();
+		else
+			return factor();
 	}
 	
 	// factor := basicValue | "(" Expr ")" | "!" factor | "nil" | objectCreation | primaryExpr 
 	private Expr factor() {
-		
 		switch (lexer.token) {
 			// basicValue := "IntValue" | "BooleanValue" | "StringValue"
             case LITERALINT:
@@ -874,7 +853,7 @@ public class Compiler {
 		//primeiro id
 		
 		if(lexer.token == Token.IN) {
-			readExpr();
+			return readExpr();
 		}else if(lexer.token == Token.ID|| lexer.token == Token.PRINT){
 			primaryExpr.setFirstId(lexer.getStringValue());
 			next();
@@ -900,7 +879,7 @@ public class Compiler {
 			return primaryExpr;
 		}
 		else{
-			error("Id or IdColon was expected");
+			error("Expression expected");
 			//return primaryExpr;
 		}
 
@@ -993,7 +972,7 @@ public class Compiler {
 		
 		AssertStat assertStat = new AssertStat(expr());
 		
-		check(Token.COMMA,"',' expected after the expression of the 'assert' statement");
+		check(Token.COMMA, "',' expected after the expression of the 'assert' statement");
 		next();
 
 		check(Token.LITERALSTRING, "A literal string expected after the ',' of the 'assert' statement");
@@ -1015,29 +994,22 @@ public class Compiler {
 		return new LiteralString(value);
 	}
 
-	// readExpr() := "In" "." [ "readInt" | "readString" ]
-	private void readExpr() {
-		
-		if(lexer.token != Token.IN){
-			error("'In' was expected");
-		}
-		
+	// readExpr() := "In" "." ( "readInt" | "readString" )
+	private Expr readExpr() {
+		// ja verificou in na chamada da funcao
 		next();
 		
 		check(Token.DOT, "'.' is missing after 'In'");
-		
 		next();
 
-		if(lexer.token == Token.READINT){
-			// voltar int
+		if(lexer.token == Token.READINT || lexer.token == Token.READSTRING){
 			next();
+			return new ReadExpr(lexer.token);
 		}
-		else if(lexer.token == Token.READSTRING){
-			//voltar string
-			next();
-		}
-		else
+		else{
 			error("Command 'In.' without arguments");
+			return null;
+		}
 	}
 
 	private SymbolTable		symbolTable;
