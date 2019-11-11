@@ -13,6 +13,14 @@ public class ExprList{
     public void addExpr(Expr expr){
         this.exprList.add(expr);
     }
+    
+    public int getTamanho() {
+    	return this.exprList.size();
+    }
+    
+    public Expr getVetor(int i) {
+    	return this.exprList.get(i);
+    }
 
     public void genJava(PW pw){
         if(this.exprList.size() > 0){

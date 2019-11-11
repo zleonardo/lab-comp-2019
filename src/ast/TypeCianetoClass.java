@@ -17,6 +17,14 @@ public class TypeCianetoClass extends Type {
    public String getCname() {
       return getName();
    }
+   
+   public void setOpen(Boolean flag) {
+	   this.open = flag;
+   }
+   
+   public Boolean getOpen() {
+	   return this.open;
+   }
 
    public void setSuperClass(TypeCianetoClass superClass){
       this.superclass = superClass;
@@ -32,6 +40,7 @@ public class TypeCianetoClass extends Type {
    private TypeCianetoClass superclass;
    private FieldList fieldList;
    private MethodList publicMethodList, privateMethodList;
+   private Boolean open;
    // m�todos p�blicos get e set para obter e iniciar as vari�veis acima,
    // entre outros m�todos
 }

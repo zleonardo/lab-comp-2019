@@ -20,6 +20,10 @@ public class LocalDecStat extends Statement{
 	public void setExpr(Expr expr){
 		this.expr = expr;
 	}
+	
+	public Type getType() {
+		return this.type;
+	}
 
 	public void genJava(PW pw){
 		// Type IdList [ "=" Expr ]

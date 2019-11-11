@@ -107,8 +107,8 @@ public class Compiler {
 		
 		// Verifica se existe uma funcao Program
 		try {
-			if (symbolTable.returnFunction("Program") != null) {
-				error("Error: Missing Program function");
+			if (symbolTable.returnClass("Program") == null) {
+				error("Source code without a class 'Program'");
 			}
 		} catch (CompilerError e) {
 			thereWasAnError = true;
@@ -234,11 +234,13 @@ public class Compiler {
 
 	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList "end"
 	private TypeCianetoClass classDec() {
+		Boolean	flagOpen = false;
 		MemberList memberList = null;
 		TypeCianetoClass classObj = null;
+		TypeCianetoClass classExtend = null;
 
 		if ( lexer.token == Token.ID && lexer.getStringValue().equals("open") ) {
-			// DECLARA OPEN QUANDO UMA CLASSE É HERDADA DE OUTRA
+			flagOpen = true;
 			next();
 		}
 
@@ -250,9 +252,8 @@ public class Compiler {
 		// Verifica se existe uma classe com o mesmo nome
 		if(symbolTable.returnClass(lexer.getStringValue()) == null) {
 			
-			//TEM QUE CHECAR SE A CLASSE COM UM MESMO NOME JA EXISTE E COLOCAR NO SYMBOLTABLE CLASSES
-			
 			classObj = new TypeCianetoClass(lexer.getStringValue());
+			classObj.setOpen(flagOpen);
 			
 			//Insere a classe no symboltable
 			symbolTable.putClass(lexer.getStringValue(), classObj);
@@ -267,9 +268,12 @@ public class Compiler {
 				//TEM QUE VERIFICAR SE A CLASSE EXTENDIDA TEM A PALAVRA OPEN EM SUA DECLARACAO
 				
 				String superclassName = lexer.getStringValue();
+				if(symbolTable.returnClass(superclassName) == null) {
+					error("Class " + superclassName + " was not found");
+				}
 				// VERIFICAR ISSO AQUI!!!
 				// falta buscar o objeto da super class, e adiciona-lo a classe
-				// classObj.setSuperClass(superClass);
+				//classObj.setSuperClass(superclassName);
 				next();
 			}
 
@@ -374,6 +378,10 @@ public class Compiler {
 	//				"func" Id [ "->" Type ] "{" StatementList"}"
 	private Method methodDec() {
 		Method method = null;
+		Boolean flagReturn = false;
+		//metodoAtual = null;
+		
+		symbolTable.resetVariables();
 		
 		// le func
 		next();
@@ -387,28 +395,48 @@ public class Compiler {
 				method = new Method(lexer.getStringValue());
 				symbolTable.putFunction(lexer.getStringValue(), method);
 				next();
+				
+				metodoAtual = method;
+				
 			}
 			else if ( lexer.token == Token.IDCOLON ) {
 				method = new Method(lexer.getStringValue());
 				symbolTable.putFunction(lexer.getStringValue(), method);
 				next();
+				
+				metodoAtual = method;
 
 				formalParamDec();
 			}
 			else {
 				error("An identifier or identifer: was expected after 'func'");
 			}
+			
+			if(metodoAtual.getName().equals("run:") || metodoAtual.getName().equals("run")) {
+				if(metodoAtual.getParametro() > 0) {
+					error("metodo 'run' nao deve tomar parametros");
+				}
+			}
+			
 			if ( lexer.token == Token.MINUS_GT ) {
 				// method declared a return type
 				next();
-				type();
+				Type s = type();
+				//metodoAtual.setType(s.get);
 			}
+			
 			
 			check(Token.LEFTCURBRACKET, "'{' expected");
 			next();
 
 			statementList();
 			check(Token.RIGHTCURBRACKET, "'}' expected");
+			
+			if(flagReturn) {
+				
+			}
+			
+			
 		}
 		else {
 			error("Error: Function " + lexer.getStringValue() + " has already been declared");
@@ -417,6 +445,8 @@ public class Compiler {
 		symbolTable.resetVariables();
 
 		next();
+		
+		metodoAtual = null;
 
 		return method;
 	}
@@ -448,6 +478,11 @@ public class Compiler {
 		else
 			id = lexer.getStringValue();
 		next();
+		
+		metodoAtual.setParametro();
+		
+		//Verificar o objeto
+		symbolTable.putVariable(id, type);
 
 		return new ParamDec(id, type);
 	}
@@ -520,24 +555,52 @@ public class Compiler {
 	// assignExpr := Expr [ "=" Expr]
 	private AssignExpr assignExpr() {
 		AssignExpr assignExpr = new AssignExpr();
-
-		assignExpr.setLeftExpr(expr());
+		
+		if (lexer.token == Token.ID || lexer.token == Token.SELF || lexer.token == Token.SUPER){
+			if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
+				if(lexer.token != Token.SELF && lexer.token != Token.SUPER) {
+					error("Variable '" + lexer.getStringValue() + "' was not declared");
+				}
+			}
+			
+			assignExpr.setLeftExpr(expr());
+        } else {
+            error("variable expected at the left-hand side of a assignment");
+        }
 
 		if(lexer.token == Token.ASSIGN){
 			next();
 			assignExpr.setRightExpr(expr());
-		}
+			
+			
+			//System.out.println(assignExpr.getLeft());
+			//System.out.println(assignExpr.getRight());
+			
+			//System.out.println(assignExpr.getLeft().getType());
+			//System.out.println(assignExpr.getRight().getType());
+			
+			/*if(assignExpr.getLeft().getType() != assignExpr.getRight().getType()) {
+				error("Types incompatibles");
+			}*/
 
+		}
+		
 		return assignExpr;
 	}
 
 	// localDec := "var" Type IdList [ "=" Expr ]
 	private LocalDecStat localDec() {
-		// TERMINAR
-		// ja checou "var"
+		
 		next();
 
 		LocalDecStat localDec = new LocalDecStat(type());
+		
+		if(localDec.getType() != Type.stringType && localDec.getType() != Type.intType && localDec.getType() != Type.booleanType) {
+			if(symbolTable.returnClass(localDec.getType().getName()) == null) {
+				error("Type '" + localDec.getType().getName() + "' was not found");
+			}
+		}
+		
 
 		localDec.setIdList(idList());
 		
@@ -676,7 +739,16 @@ public class Compiler {
 		// precisa criar a classe Out
 		String printName = lexer.getStringValue();
 		next();
-		exprList();
+		ExprList expr = exprList();
+		
+		for(int i = 0; i < expr.getTamanho(); i++) {
+			//System.out.println(expr.getVetor(i).getType());
+			if(expr.getVetor(i) == null) {
+				error("Command ' Out.print' without arguments");
+			}else if(expr.getVetor(i).getType().equals("boolean")) {
+				error("Attempt to print a boolean expression");
+			}
+		}
 	}
 	
 	// exprList := Expr { "," Expr }
@@ -918,6 +990,7 @@ public class Compiler {
 
 		Type type = type();
 		
+		
 		IdList idList = idList();
 		
 
@@ -1015,5 +1088,6 @@ public class Compiler {
 	private SymbolTable		symbolTable;
 	private Lexer			lexer;
 	private ErrorSignaller	signalError;
+	private Method metodoAtual;
 
 }
