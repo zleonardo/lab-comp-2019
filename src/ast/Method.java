@@ -3,11 +3,12 @@
 	Nome: Leonardo Zaccarias	 RA: 620491
 */
 package ast;
+import java.util.ArrayList;
 
 public class Method {
 	private String name;
-	private String type;
-	private int parametros = 0;
+	private Type type;
+	private ArrayList<ParamDec> parametros = new ArrayList<ParamDec>();
 
 	public Method(String name){
 		this.name = name;
@@ -17,19 +18,19 @@ public class Method {
 		return this.name;
 	}
 	
-	public void setType(String type) {
+	public void setType(Type type) {
 		this.type = type;
 	}
 	
-	public String getType() {
+	public Type getType() {
 		return this.type;
 	}
 	
-	public void setParametro() {
-		this.parametros = this.parametros + 1;
+	public void addParametro(ParamDec parametro) {
+		this.parametros.add(parametro);
 	}
 	
-	public int getParametro() {
+	public ArrayList<ParamDec> getParametro() {
 		return parametros;
 	}
 

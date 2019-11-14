@@ -8,40 +8,8 @@ package comp;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import ast.AssertStat;
-import ast.AssignExpr;
-import ast.BreakStat;
-import ast.CompositeExpr;
-import ast.Expr;
-import ast.ExprInParentheses;
-import ast.ExprList;
-import ast.Field;
-import ast.IdList;
-import ast.IfStat;
-import ast.LiteralBoolean;
-import ast.LiteralInt;
-import ast.LiteralString;
-import ast.LocalDecStat;
-import ast.MemberList;
-import ast.MetaobjectAnnotation;
-import ast.Method;
-import ast.NegationFactor;
-import ast.NullExpr;
-import ast.NullStat;
-import ast.ParamDec;
-import ast.PrimaryExpr;
-import ast.Program;
-import ast.ReadExpr;
-import ast.RepeatStat;
-import ast.ReturnStat;
-import ast.SignalFactor;
-import ast.Statement;
-import ast.StatementList;
-import ast.Type;
-import ast.TypeCianetoClass;
-import ast.WhileStat;
-import lexer.Lexer;
-import lexer.Token;
+import ast.*;
+import lexer.*;
 
 public class Compiler {
 
@@ -235,9 +203,9 @@ public class Compiler {
 	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList "end"
 	private TypeCianetoClass classDec() {
 		Boolean	flagOpen = false;
-		MemberList memberList = null;
 		TypeCianetoClass classObj = null;
-		TypeCianetoClass classExtend = null;
+		String className;
+		String superClassName;
 
 		if ( lexer.token == Token.ID && lexer.getStringValue().equals("open") ) {
 			flagOpen = true;
@@ -248,48 +216,49 @@ public class Compiler {
 		next();
 		
 		check(Token.ID, "Identifier expected");
-		
+		className = lexer.getStringValue();
+		next();
+
 		// Verifica se existe uma classe com o mesmo nome
-		if(symbolTable.returnClass(lexer.getStringValue()) == null) {
-			
-			classObj = new TypeCianetoClass(lexer.getStringValue());
+		if(symbolTable.returnClass(className) != null)
+			error("Error: Class " + lexer.getStringValue() + "has already been declared");
+		else{
+			classObj = new TypeCianetoClass(className);
 			classObj.setOpen(flagOpen);
 			
-			//Insere a classe no symboltable
-			symbolTable.putClass(lexer.getStringValue(), classObj);
-			
-			next();
-		
 			if ( lexer.token == Token.EXTENDS ) {
 				next();
 
 				check(Token.ID, "Identifier expected");
+				superClassName = lexer.getStringValue();
 				
-				//TEM QUE VERIFICAR SE A CLASSE EXTENDIDA TEM A PALAVRA OPEN EM SUA DECLARACAO
-				
-				String superclassName = lexer.getStringValue();
-				if(symbolTable.returnClass(superclassName) == null) {
-					error("Class " + superclassName + " was not found");
-				}
-				// VERIFICAR ISSO AQUI!!!
-				// falta buscar o objeto da super class, e adiciona-lo a classe
-				//classObj.setSuperClass(superclassName);
+				TypeCianetoClass superClassObj = symbolTable.returnClass(superClassName);
+				// verifica se super classe eh ela propria
+				if(superClassName.equals(className))
+					error("Class '" + className + "' is inheriting from itself");
+				// verifica se super classe foi declarada
+				else if(superClassObj == null)
+					error("Class " + superClassName + " was not found");
+				// verifica se super classe eh open
+				else if(superClassObj.getOpen() == false)
+					error("Class " + superClassName + " is not open");
+
+				classObj.setSuperClass(superClassObj);
 				next();
 			}
 
-			memberList = memberList();
-			classObj.setMemberList(memberList);
-			
-		}else {
-			error("Error: Class " + lexer.getStringValue() + "has already been declared");
+			classObj.setMemberList(memberList());
+
+			//Insere a classe no symboltable
+			symbolTable.putClass(className, classObj);
 		}
-		
+
 		check(Token.END, "'end' expected");
 		next();
-		
-		//Limpa a hash das variaveis locais
-		//Sepa que tem que limpar as funcoes. VERIFICAR!
-		symbolTable.resetLocal();
+
+		//Limpa a hash das variaveis globais e funcoes
+		symbolTable.resetAttibutes();
+		symbolTable.resetMethods();
 
 		return classObj;
 	}
@@ -378,22 +347,23 @@ public class Compiler {
 	//				"func" Id [ "->" Type ] "{" StatementList"}"
 	private Method methodDec() {
 		Method method = null;
-		Boolean flagReturn = false;
+		// Boolean flagReturn = false;
 		//metodoAtual = null;
-		
-		symbolTable.resetVariables();
 		
 		// le func
 		next();
 		
-		//Verificar se existe ja uma funcao com o mesmo nome
-		if(symbolTable.returnFunction(lexer.getStringValue()) == null) {
-		
+		//Verificar se ja existe um metodo ou atributo com o mesmo nome
+		if(symbolTable.returnMethod(lexer.getStringValue()) != null) 
+			error("Method '" + lexer.getStringValue() + "' is being redeclared");
+		else if(symbolTable.returnAttribute(lexer.getStringValue()) != null) 
+			error("Method '" + lexer.getStringValue() + "' has name equal to an instance variable");
+		else {
 			// VERIFICAR ESSE PRINT AQUI!!! ARQUIVO GER21.ci para verificar func print
 			if ( lexer.token == Token.ID || lexer.token == Token.PRINT) {
 				// unary method
 				method = new Method(lexer.getStringValue());
-				symbolTable.putFunction(lexer.getStringValue(), method);
+				symbolTable.putMethod(lexer.getStringValue(), method);
 				next();
 				
 				metodoAtual = method;
@@ -401,7 +371,7 @@ public class Compiler {
 			}
 			else if ( lexer.token == Token.IDCOLON ) {
 				method = new Method(lexer.getStringValue());
-				symbolTable.putFunction(lexer.getStringValue(), method);
+				symbolTable.putMethod(lexer.getStringValue(), method);
 				next();
 				
 				metodoAtual = method;
@@ -413,7 +383,7 @@ public class Compiler {
 			}
 			
 			if(metodoAtual.getName().equals("run:") || metodoAtual.getName().equals("run")) {
-				if(metodoAtual.getParametro() > 0) {
+				if(metodoAtual.getParametro().size() > 0) {
 					error("metodo 'run' nao deve tomar parametros");
 				}
 			}
@@ -432,22 +402,16 @@ public class Compiler {
 			statementList();
 			check(Token.RIGHTCURBRACKET, "'}' expected");
 			
-			if(flagReturn) {
+			// if(flagReturn) {
 				
-			}
-			
-			
+			// }
 		}
-		else {
-			error("Error: Function " + lexer.getStringValue() + " has already been declared");
-		}
-
-		symbolTable.resetVariables();
 
 		next();
 		
 		metodoAtual = null;
 
+		symbolTable.resetVariables();
 		return method;
 	}
 	
@@ -470,7 +434,6 @@ public class Compiler {
 	private ParamDec paramDec() {
 		String id = "";
 		Type type = type();
-		
 
 		if(lexer.token != Token.ID){
 			error("Id was expected");
@@ -479,10 +442,11 @@ public class Compiler {
 			id = lexer.getStringValue();
 		next();
 		
-		metodoAtual.setParametro();
-		
+		Variable param = new Variable(id);
+		param.setType(type);
 		//Verificar o objeto
-		symbolTable.putVariable(id, type);
+		// pra q isso?
+		symbolTable.putVariable(id, param);
 
 		return new ParamDec(id, type);
 	}
@@ -572,17 +536,15 @@ public class Compiler {
 			next();
 			assignExpr.setRightExpr(expr());
 			
+			if(assignExpr.getLeft().getType() != assignExpr.getRight().getType())
+			// System.out.println(assignExpr.getLeft());
+			// System.out.println(assignExpr.getRight());
 			
-			//System.out.println(assignExpr.getLeft());
-			//System.out.println(assignExpr.getRight());
+			// System.out.println(assignExpr.getLeft().getType());
+			// System.out.println(assignExpr.getRight().getType());
 			
-			//System.out.println(assignExpr.getLeft().getType());
-			//System.out.println(assignExpr.getRight().getType());
-			
-			/*if(assignExpr.getLeft().getType() != assignExpr.getRight().getType()) {
-				error("Types incompatibles");
-			}*/
-
+			// if(assignExpr.getLeft().getType() != assignExpr.getRight().getType())
+				error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
 		}
 		
 		return assignExpr;
@@ -590,23 +552,32 @@ public class Compiler {
 
 	// localDec := "var" Type IdList [ "=" Expr ]
 	private LocalDecStat localDec() {
-		
 		next();
-
-		LocalDecStat localDec = new LocalDecStat(type());
 		
-		if(localDec.getType() != Type.stringType && localDec.getType() != Type.intType && localDec.getType() != Type.booleanType) {
-			if(symbolTable.returnClass(localDec.getType().getName()) == null) {
-				error("Type '" + localDec.getType().getName() + "' was not found");
-			}
+		Type type = type();
+
+		IdList idList = idList(type);
+		
+		LocalDecStat localDec = new LocalDecStat(type);
+
+		// Semantica
+		for(int i = 0; i < idList.size(); i++){
+			Variable varObj = idList.getVariable(i);
+			String varName = varObj.getName();
+			// Verifica se ja foi declarado
+			if(symbolTable.returnVariable(varName) != null)
+				error("Variable '" + varName + "' is being redeclared");
+			else
+				symbolTable.putVariable(varName, varObj);
 		}
 		
+		localDec.setIdList(idList);
 
-		localDec.setIdList(idList());
-		
 		if ( lexer.token == Token.ASSIGN ) {
 			next();
 			// check if there is just one variable
+			if(idList.size() != 1)
+				error("Error: Assign only allowed to one variable");
 			localDec.setExpr(expr());
 		}
 
@@ -614,31 +585,23 @@ public class Compiler {
 	}
 	
 	// idList := Id { "," Id } 
-	private IdList idList() {
+	private IdList idList(Type type) {
 		IdList idlist = new IdList();
-		
-		//Verifica se ja existe uma variavel
-		if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
-			check(Token.ID, "Identifier expected");
-			idlist.add(lexer.getStringValue());
-			symbolTable.putVariable(lexer.getStringValue(), idlist);
+
+		String varName = lexer.getStringValue();
+		Variable varObj = new Variable(varName);
+		varObj.setType(type);
+		idlist.add(varObj);
+		next();
+
+		while(lexer.token == Token.COMMA){
 			next();
 
-			while ( lexer.token == Token.COMMA ) {
-				next();
-				if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
-					check(Token.ID, "Identifier expected");
-					idlist.add(lexer.getStringValue());
-					symbolTable.putVariable(lexer.getStringValue(), idlist);
-					next();
-				}
-				else {
-					error("Missing identifier");
-				}
-			}
-		}
-		else {
-			error("Missing identifier");
+			check(Token.ID, "Identifier expected");
+			varObj = new Variable(varName);
+			varObj.setType(type);
+			idlist.add(varObj);
+			next();
 		}
 
 		return idlist;
@@ -649,14 +612,18 @@ public class Compiler {
 		// ja leu "repeat" no statement
 		next();
 
-		// Esse while o zé colocou, mas nao sei ainda o porque
-		// while ( lexer.token != Token.UNTIL && lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END ) {
 		RepeatStat repeatStat = new RepeatStat(statementList());
-		// }
+		
 		check(Token.UNTIL, "'until' expected");
 		next();
 
-		repeatStat.setCondition(expr());
+		Expr expr = expr();
+		
+		// semantica
+		if(expr.getType() != Type.booleanType)
+			error("boolean expression expected in a repeat-until statement");
+
+		repeatStat.setCondition(expr);
 
 		return repeatStat;
 	}
@@ -680,7 +647,12 @@ public class Compiler {
 		// ja leu "while" no metodo statement
 		next();
 
-		WhileStat whileStat = new WhileStat(expr());
+		Expr expr = expr();
+		WhileStat whileStat = new WhileStat(expr);
+
+		// semantica
+		if(expr.getType() != Type.booleanType)
+			error("non-boolean expression in 'while' command");
 
 		check(Token.LEFTCURBRACKET, "missing '{' after the 'while' expression");
 		next();
@@ -697,7 +669,12 @@ public class Compiler {
 	private IfStat ifStat(){
 		next();
 		
-		IfStat ifStat = new IfStat(expr());
+		Expr expr = expr();
+		IfStat ifStat = new IfStat(expr);
+
+		// semantica
+		if(expr.getType() != Type.booleanType)
+			error("non-boolean expression in 'if' command");
 		
 		check(Token.LEFTCURBRACKET, "'{' expected");
 		next();
@@ -804,32 +781,47 @@ public class Compiler {
 	
 	// SumSubExpr := Term { lowOperator Term }
 	private Expr sumSubExpr() {
-		Expr ce = term();
+		Expr left = term();
 
 		// lowOperator := "+" | "-" | "||"
 		while(lexer.token == Token.PLUS || lexer.token == Token.MINUS || lexer.token == Token.OR){
 			Token oper = lexer.token;
 			next();
+
+			Expr right = term();
+
+			// semantica
+			if(left.getType() != right.getType())
+			error("operator '" + oper.toString() + "' of '" + left.getType().getCname() + "' expects an '" + left.getType().getCname() + "' value");
+		
+			if(left.getType() == Type.booleanType && oper != Token.OR)
+				error("type boolean does not support operation '" + oper.toString() + "'");
 			
-			ce = new CompositeExpr(ce, oper, term());
+			left = new CompositeExpr(left, oper, right);
 		}
 
-		return ce;
+		return left;
 	}
 	
 	// term := signalFactor { highOperator signalFactor }
 	private Expr term() {
-		Expr ce = signalFactor();
+		Expr left = signalFactor();
 
 		// highOperator := "*" | "/" | "&&"
 		while(lexer.token == Token.MULT || lexer.token == Token.DIV || lexer.token == Token.AND){
 			Token oper = lexer.token;
 			next();
 			
-			ce = new CompositeExpr(ce, oper, signalFactor());
+			Expr right = signalFactor();
+			
+			// semantica
+			if(left.getType() == Type.booleanType && oper != Token.OR)
+				error("type boolean does not support operation '" + oper.toString() + "'");
+
+			left = new CompositeExpr(left, oper, right);
 		}
 
-		return ce;
+		return left;
 	}
 	
 	// signalFactor := [ Signal ] factor
@@ -849,10 +841,8 @@ public class Compiler {
 		switch (lexer.token) {
 			// basicValue := "IntValue" | "BooleanValue" | "StringValue"
             case LITERALINT:
-            	next();
 				return literalInt();
             case LITERALSTRING:
-				next();
 				return literalString();
             case TRUE:
 				next();
@@ -869,8 +859,12 @@ public class Compiler {
 				return expr;
         
 		    case NOT:
-            	next();
-				return new NegationFactor(factor());
+				next();
+				Expr factor = factor();
+				if(factor.getType() != Type.booleanType)
+					error("Operator '!' does not accepts '" + factor.getType().toString() + "' values");
+					
+				return new NegationFactor(factor);
         
 		    case NULL:
 				return new NullExpr();
@@ -903,17 +897,23 @@ public class Compiler {
 	*/	
 	private Expr primaryExpr() {
 		PrimaryExpr primaryExpr = new PrimaryExpr();
+		Variable v;
+		TypeCianetoClass c;
+		String firstIdName = null, secondIdName = null;
+		Token scope;
 
 		// escopo
 		if(lexer.token == Token.SUPER){
-			primaryExpr.setScope(Token.SUPER);
+			scope = Token.SUPER;
+			primaryExpr.setScope(scope);
 			next();
 
 			check(Token.DOT, "'.' was expected after 'super'");
 			next();
 		}
 		else if(lexer.token == Token.SELF){
-			primaryExpr.setScope(Token.SELF);
+			scope = Token.SELF;
+			primaryExpr.setScope(scope);
 			next();
 			if(lexer.token != Token.DOT)
 				return primaryExpr;
@@ -921,13 +921,13 @@ public class Compiler {
 				// le ponto
 				next();
 		}
+		else
+			scope = null;
 
-		//primeiro id
-		
 		if(lexer.token == Token.IN) {
 			return readExpr();
-		}else if(lexer.token == Token.ID|| lexer.token == Token.PRINT){
-			primaryExpr.setFirstId(lexer.getStringValue());
+		}else if(lexer.token == Token.ID || lexer.token == Token.PRINT){
+			primaryExpr.setFirstIdName(lexer.getStringValue());
 			next();
 			if(lexer.token == Token.DOT) {
 				next();
@@ -935,9 +935,9 @@ public class Compiler {
 					next();
 				}else if(lexer.token == Token.ID || lexer.token == Token.PRINT) {
 					next();
-					primaryExpr.setSecondId(lexer.getStringValue());	
+					primaryExpr.setSecondIdName(lexer.getStringValue());
 				}else if(lexer.token == Token.IDCOLON) {
-					primaryExpr.setSecondId(lexer.getStringValue());
+					primaryExpr.setSecondIdName(lexer.getStringValue());
 					next();
 					primaryExpr.setExprList(exprList());
 				}
@@ -945,7 +945,7 @@ public class Compiler {
 			return primaryExpr;
 		}
 		else if(lexer.token == Token.IDCOLON){
-			primaryExpr.setFirstId(lexer.getStringValue());
+			primaryExpr.setFirstIdName(lexer.getStringValue());
 			next();
 			primaryExpr.setExprList(exprList());
 			return primaryExpr;
@@ -955,31 +955,6 @@ public class Compiler {
 			//return primaryExpr;
 		}
 
-		// segundo id
-		/*
-		if(lexer.token == Token.ID){
-			primaryExpr.setSecondId(lexer.getStringValue());
-			next();
-			if(lexer.token == Token.DOT) {
-				next();
-				if(lexer.token == Token.NEW) {
-					next();
-				}
-			}
-			return primaryExpr;
-		}
-		else if(lexer.token == Token.IDCOLON){
-			primaryExpr.setSecondId(lexer.getStringValue());
-			next();
-			primaryExpr.setExprList(exprList());
-			return primaryExpr;
-		}
-		else{
-			error("Id or IdColon was expected");
-			//return primaryExpr;
-		}
-		*/
-		
 		return primaryExpr;
 	}
 	
@@ -990,35 +965,41 @@ public class Compiler {
 
 		Type type = type();
 		
+		IdList idList = idList(type);
 		
-		IdList idList = idList();
-		
+		// Semantica
+		for(int i = 0; i < idList.size(); i++){
+			Variable varObj = idList.getVariable(i);
+			String varName = varObj.getName();
+			// Verifica se ja foi declarado
+			if(symbolTable.returnAttribute(varName) != null)
+				error("Variable '" + varName + "i' is being redeclared");
+			else
+				symbolTable.putAttribute(varName, varObj);
+		}
 
 		if(lexer.token == Token.SEMICOLON) {
 			next();
 		}
-		
 
 		return new Field(type, idList);
 	}
 
 	// type := BasicType | Id
 	private Type type() {
-		Type type;
+		Type type = null;
 
 		if ( lexer.token == Token.INT || lexer.token == Token.BOOLEAN || lexer.token == Token.STRING ) {
 			type = basicType();
 			next();
 		}
 		else if ( lexer.token == Token.ID ) {
-			type = new TypeCianetoClass(lexer.getStringValue());
+			type = symbolTable.returnClass(lexer.getStringValue());
 			next();
 		}
-		else {
-			this.error("A type was expected");
-			type = null;
-			next();
-		}
+
+		if(type == null)
+			this.error("Type '" + lexer.getStringValue() + "' was not found");
 		
 		return type;
 	}
@@ -1050,20 +1031,19 @@ public class Compiler {
 
 		check(Token.LITERALSTRING, "A literal string expected after the ',' of the 'assert' statement");
 		assertStat.setString(literalString());
-		next();
 
-		return null;
+		return assertStat;
 	}
 	
 	private LiteralInt literalInt() {
 		int value = lexer.getNumberValue();
-		//next();
+		next();
 		return new LiteralInt(value);
 	}
 	
 	private LiteralString literalString() {
 		String value = lexer.getStringValue();
-		//next();
+		next();
 		return new LiteralString(value);
 	}
 

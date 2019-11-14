@@ -7,49 +7,66 @@ package comp;
 
 import java.util.Hashtable;
 
+import ast.TypeCianetoClass;
+import ast.Variable;
+
 
 public class SymbolTable {
-	private Hashtable<String, Object> classesTable;
-    private Hashtable<String, Object> functionTable;
-    private Hashtable<String, Object> variablesTable;
+	private Hashtable<String, TypeCianetoClass> classesTable;
+    private Hashtable<String, Object> methodsTable;
+    private Hashtable<String, Variable> attributesTable;
+    private Hashtable<String, Variable> variablesTable;
 
     public SymbolTable() {
-        this.classesTable = new Hashtable<String, Object>();
-        this.functionTable = new Hashtable<String, Object>();
-        this.variablesTable = new Hashtable<String, Object>();
+        this.classesTable = new Hashtable<String, TypeCianetoClass>();
+        this.methodsTable = new Hashtable<String, Object>();
+        this.attributesTable = new Hashtable<String, Variable>();
+        this.variablesTable = new Hashtable<String, Variable>();
     }
 
     // Limpa tabela de variáveis locais
+
+    public void resetAttibutes(){
+        this.attributesTable.clear();
+    }
 
     public void resetVariables(){
         this.variablesTable.clear();
     }
 
-    public void resetLocal() {
-        this.functionTable.clear();
+    public void resetMethods() {
+        this.methodsTable.clear();
     }
 
-    public Object returnClass(String chave) {
+    public TypeCianetoClass returnClass(String chave) {
         return this.classesTable.get(chave);
     }
 
-    public Object returnFunction(String chave) {
-        return this.functionTable.get(chave);
+    public Object returnMethod(String chave) {
+        return this.methodsTable.get(chave);
     }
     
-    public Object returnVariable(String chave) {
+    public Variable returnAttribute(String chave) {
+        return this.attributesTable.get(chave);
+    }
+    
+    public Variable returnVariable(String chave) {
         return this.variablesTable.get(chave);
     }
 
-    public void putClass(String chave, Object valor) {
+    public void putClass(String chave, TypeCianetoClass valor) {
         this.classesTable.put(chave, valor);
     }
 
-    public void putFunction(String chave, Object valor) {
-        this.functionTable.put(chave, valor);
+    public void putMethod(String chave, Object valor) {
+        this.methodsTable.put(chave, valor);
     }
     
-    public void putVariable(String chave, Object valor) {
+    public void putAttribute(String chave, Variable valor) {
+        this.attributesTable.put(chave, valor);
+    }
+    
+    public void putVariable(String chave, Variable valor) {
         this.variablesTable.put(chave, valor);
     }
 }
