@@ -899,34 +899,29 @@ public class Compiler {
 		PrimaryExpr primaryExpr = new PrimaryExpr();
 		Variable v;
 		TypeCianetoClass c;
-		String firstIdName = null, secondIdName = null;
-		Token scope;
+		Boolean finished = false;
 
 		// escopo
 		if(lexer.token == Token.SUPER){
-			scope = Token.SUPER;
-			primaryExpr.setScope(scope);
+			primaryExpr.setScope(Token.SUPER);
 			next();
 
 			check(Token.DOT, "'.' was expected after 'super'");
 			next();
 		}
 		else if(lexer.token == Token.SELF){
-			scope = Token.SELF;
-			primaryExpr.setScope(scope);
+			primaryExpr.setScope(Token.SELF);
 			next();
 			if(lexer.token != Token.DOT)
-				return primaryExpr;
+				finished = true;
 			else
 				// le ponto
 				next();
 		}
-		else
-			scope = null;
 
-		if(lexer.token == Token.IN) {
+		if(lexer.token == Token.IN)
 			return readExpr();
-		}else if(lexer.token == Token.ID || lexer.token == Token.PRINT){
+		else if(!finished && lexer.token == Token.ID || lexer.token == Token.PRINT){
 			primaryExpr.setFirstIdName(lexer.getStringValue());
 			next();
 			if(lexer.token == Token.DOT) {
@@ -942,18 +937,31 @@ public class Compiler {
 					primaryExpr.setExprList(exprList());
 				}
 			}
-			return primaryExpr;
+			finished = true;
 		}
-		else if(lexer.token == Token.IDCOLON){
+		else if(!finished && lexer.token == Token.IDCOLON){
 			primaryExpr.setFirstIdName(lexer.getStringValue());
 			next();
 			primaryExpr.setExprList(exprList());
-			return primaryExpr;
 		}
 		else{
 			error("Expression expected");
 			//return primaryExpr;
 		}
+
+		// Semantica
+		// Sem self e super
+		if(primaryExpr.getScope() == null)
+			// apenas id
+			if(primaryExpr.getSecondIdName() == null){
+				Variable v = symbolTable.returnVariable(primaryExpr.getFirstIdName());
+				if(v == null)
+					error("Variable not declared");
+				else{
+					primaryExpr.setFirstIdObj(v);
+					primaryExpr.setType(v.getType());
+				}
+			}
 
 		return primaryExpr;
 	}

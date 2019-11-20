@@ -18,6 +18,10 @@ public class PrimaryExpr extends Expr {
 		this.scope = scope;
 	}
 
+	public Token getScope() {
+		return this.scope;
+	}
+
 	public void setType(Type type){
 		this.type = type;
 	}
@@ -54,7 +58,7 @@ public class PrimaryExpr extends Expr {
 		this.secondIdObj = secondIdObj;
 	}
 
-	public Variable getSecondId(){
+	public Variable getSecondIdObj(){
 		return this.secondIdObj;
 	}
 
