@@ -280,6 +280,8 @@ public class Compiler {
 			
 			// member := fieldDec | methodDec
 			if ( lexer.token == Token.VAR ) {
+				if(qualifier != null && qualifier.contains("public"))
+					error("Attempt to declare public instance variable");
 				memberList.addField(fieldDec());
 			}
 			else if ( lexer.token == Token.FUNC ) {
