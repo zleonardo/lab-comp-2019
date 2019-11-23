@@ -615,10 +615,17 @@ public class Compiler {
 
 	// repeatStat := "repeat" statementList "until" expr
 	private RepeatStat repeatStat() {
+		RepeatStat repeatStat = null;
 		// ja leu "repeat" no statement
 		next();
 
-		RepeatStat repeatStat = new RepeatStat(statementList());
+		if(outsideWhileRepeatUntil){
+			outsideWhileRepeatUntil = false;
+			repeatStat = new RepeatStat(statementList());
+			outsideWhileRepeatUntil = true;
+		}
+		else
+			repeatStat = new RepeatStat(statementList());
 		
 		check(Token.UNTIL, "'until' expected");
 		next();
@@ -638,6 +645,11 @@ public class Compiler {
 	private BreakStat breakStat() {
 		// ja leu o "break" no statement
 		next();
+
+		// semantica
+		if(outsideWhileRepeatUntil)
+			error("'break' statement found outside a 'while' or 'repeat-until' statement");
+
 		return new BreakStat();
 	}
 
@@ -663,7 +675,13 @@ public class Compiler {
 		check(Token.LEFTCURBRACKET, "missing '{' after the 'while' expression");
 		next();
 
-		whileStat.setWhilePart(statementList());
+		if(outsideWhileRepeatUntil){
+			outsideWhileRepeatUntil = false;
+			whileStat.setWhilePart(statementList());
+			outsideWhileRepeatUntil = true;
+		}
+		else
+			whileStat.setWhilePart(statementList());
 
 		check(Token.RIGHTCURBRACKET, "missing '}' after 'while' body");
 		next();
@@ -685,10 +703,7 @@ public class Compiler {
 		check(Token.LEFTCURBRACKET, "'{' expected");
 		next();
 		
-		// nao era pra ser statementlist?
-		while ( lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.END && lexer.token != Token.ELSE ) {
-			statement();
-		}
+		ifStat.setIfPart(statementList());
 		
 		check(Token.RIGHTCURBRACKET, "'}' was expected");
 		
@@ -699,13 +714,12 @@ public class Compiler {
 			next();
 			check(Token.LEFTCURBRACKET, "'{' expected after 'else'");
 			next();
-			while ( lexer.token != Token.RIGHTCURBRACKET ) {
-				statement();
-			}
+			
+			ifStat.setElsePart(statementList());
+
 			check(Token.RIGHTCURBRACKET, "'}' was expected");
 			next();
 		}
-		
 
 		return ifStat;
 	}
@@ -764,7 +778,9 @@ public class Compiler {
 				Token relation = lexer.token;
 				next();
 				Expr right = simpleExpr();
-				left = new CompositeExpr(left,  relation, right);
+				CompositeExpr ce = new CompositeExpr(left,  relation, right);
+				ce.setType(Type.booleanType);
+				left = ce;
 
 				// semantica
 			break;
@@ -777,15 +793,25 @@ public class Compiler {
 	
 	// simpleExpr := SumSubExpr { "++" SumSubExpr }
 	private Expr simpleExpr() {
-		Expr ce = sumSubExpr();
+		Expr left = sumSubExpr();
 
 		while(lexer.token == Token.PLUSPLUS){
 			next();
+			Expr right = sumSubExpr();
+			CompositeExpr ce = new CompositeExpr(left, Token.PLUSPLUS, right);
+			ce.setType(Type.stringType);
 			
-			ce = new CompositeExpr(ce, Token.PLUSPLUS, sumSubExpr());
+			// semantica
+			if(left.getType() != Type.intType && left.getType() != Type.stringType)
+				error("Illegal types with ++, only Int and String are allowed");
+
+			if(right.getType() != Type.intType && right.getType() != Type.stringType)
+				error("Illegal types with ++, only Int and String are allowed");
+
+			left = ce;
 		}
 
-		return ce;
+		return left;
 	}
 	
 	// SumSubExpr := Term { lowOperator Term }
@@ -799,10 +825,14 @@ public class Compiler {
 
 			Expr right = term();
 
+			CompositeExpr ce = new CompositeExpr(left, oper, right);
+
 			// semantica
 			if(left.getType() != right.getType())
 				error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
-		
+			else
+				ce.setType(left.getType());
+
 			if(left.getType() == Type.booleanType && oper != Token.OR)
 				error("type boolean does not support operation '" + oper.toString() + "'");
 
@@ -811,7 +841,7 @@ public class Compiler {
 			if(right.getType() != Type.booleanType && oper == Token.OR)
 				error("type" + right.getType().getName() +  " does not support operation '||'");
 
-			left = new CompositeExpr(left, oper, right);
+			left = ce;
 		}
 
 		return left;
@@ -827,10 +857,14 @@ public class Compiler {
 			next();
 			
 			Expr right = signalFactor();
+
+			CompositeExpr ce = new CompositeExpr(left,  oper, right);
 			
 			// semantica
-			// if(left.getType() != right.getType())
-			// 	error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
+			if(left.getType() != right.getType())
+				error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
+			else
+				ce.setType(left.getType());
 
 			if(left.getType() == Type.booleanType && oper != Token.AND)
 				error("type boolean does not support operation '" + oper.toString() + "'");
@@ -840,7 +874,7 @@ public class Compiler {
 			if(right.getType() != Type.booleanType && oper == Token.AND)
 				error("type" + right.getType().getName() +  " does not support operation '&&'");
 
-			left = new CompositeExpr(left, oper, right);
+			left = ce;
 		}
 
 		return left;
@@ -1123,6 +1157,7 @@ public class Compiler {
 		}
 	}
 
+	private boolean outsideWhileRepeatUntil = true;
 	private SymbolTable		symbolTable;
 	private Lexer			lexer;
 	private ErrorSignaller	signalError;

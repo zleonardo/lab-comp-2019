@@ -14,10 +14,8 @@ public class LiteralInt extends Expr {
     public int getValue() {
         return value;
     }
-    public void genJava( PW pw, boolean putParenthesis ) {
-        pw.printIdent("" + value);
-    }
     
+    @Override
     public Type getType() {
         return Type.intType;
     }

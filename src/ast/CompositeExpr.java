@@ -9,6 +9,7 @@ import lexer.Token;
 public class CompositeExpr extends Expr {
 	Expr left, right = null;
 	Token oper = null;
+	Type type = null;
 
 	public CompositeExpr(Expr left, Token oper, Expr right){
 		this.left = left;
@@ -16,10 +17,16 @@ public class CompositeExpr extends Expr {
 		this.right = right;
 	}
  
+    @Override
 	public Type getType(){
-		return left.getType();
+		return this.type;
 	}
 
+	public void setType(Type type){
+		this.type = type;
+	}
+
+    @Override
 	public void genJava(PW pw) {
 		left.genJava(pw);
 		if(oper == null)

@@ -11,11 +11,12 @@ public class LiteralString extends Expr {
         this.literalString = literalString;
     }
     
+    @Override
     public void genJava( PW pw ) {
         pw.print(literalString);
     }
 
-    
+    @Override
     public Type getType() {
         return Type.stringType;
     }
