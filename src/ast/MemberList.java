@@ -4,8 +4,10 @@
 */
 package ast;
 
+import java.util.ArrayList;
+
 public class MemberList {
-   	private FieldList fieldList = new FieldList();
+   	private ArrayList<Variable> fieldList = new ArrayList<Variable>();
 	private MethodList publicMethodList = new MethodList();
 	private MethodList privateMethodList = new MethodList();
 
@@ -17,11 +19,11 @@ public class MemberList {
 		this.privateMethodList.add(method);
 	}
 
-	public void addField(Field field){
-		this.fieldList.add(field);
+	public void addField(ArrayList<Variable> fieldList){
+		this.fieldList.addAll(fieldList);
 	}
 
-	public FieldList getFieldList(){
+	public ArrayList<Variable> getFieldList(){
 		return this.fieldList;
 	}
 	public MethodList getPublicMethodList(){

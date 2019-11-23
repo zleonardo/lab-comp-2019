@@ -745,7 +745,7 @@ public class Compiler {
 	// expr := SimpleExpression [ Relation SimpleExpr ]
 	private Expr expr() {
 		// CompositeExpr left = simpleExpr();
-		Expr ce = simpleExpr();
+		Expr left = simpleExpr();
 
 		switch(lexer.token){
 			// relation := "==" | "<" | ">" | "<=" | ">=" | "!=" 
@@ -757,13 +757,16 @@ public class Compiler {
 			case NEQ:
 				Token relation = lexer.token;
 				next();
-				ce = new CompositeExpr(ce,  relation, simpleExpr());
+				Expr right = simpleExpr();
+				left = new CompositeExpr(left,  relation, right);
+
+				// semantica
 			break;
 			default:
 				//break;
 		}
 		
-		return ce;
+		return left;
 	}
 	
 	// simpleExpr := SumSubExpr { "++" SumSubExpr }
@@ -792,11 +795,16 @@ public class Compiler {
 
 			// semantica
 			if(left.getType() != right.getType())
-			error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
+				error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
 		
 			if(left.getType() == Type.booleanType && oper != Token.OR)
 				error("type boolean does not support operation '" + oper.toString() + "'");
-			
+
+			if(left.getType() != Type.booleanType && oper == Token.OR)
+				error("type" + left.getType().getName() +  " does not support operation '||'");
+			if(right.getType() != Type.booleanType && oper == Token.OR)
+				error("type" + right.getType().getName() +  " does not support operation '||'");
+
 			left = new CompositeExpr(left, oper, right);
 		}
 
@@ -815,8 +823,16 @@ public class Compiler {
 			Expr right = signalFactor();
 			
 			// semantica
-			if(left.getType() == Type.booleanType && oper != Token.OR)
+			// if(left.getType() != right.getType())
+			// 	error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
+
+			if(left.getType() == Type.booleanType && oper != Token.AND)
 				error("type boolean does not support operation '" + oper.toString() + "'");
+				
+			if(left.getType() != Type.booleanType && oper == Token.AND)
+				error("type" + left.getType().getName() +  " does not support operation '&&'");
+			if(right.getType() != Type.booleanType && oper == Token.AND)
+				error("type" + right.getType().getName() +  " does not support operation '&&'");
 
 			left = new CompositeExpr(left, oper, right);
 		}
@@ -970,7 +986,7 @@ public class Compiler {
 				else
 					primaryExpr.setFirstIdObj(classObj);
 				
-				variableObj = symbolTable.returnVariable(primaryExpr.getSecondIdName());
+				variableObj = classObj.returnField(primaryExpr.getSecondIdName());
 				if(variableObj == null)
 					error("Variable " + primaryExpr.getSecondIdName() + "not declared");
 				else{
@@ -984,7 +1000,8 @@ public class Compiler {
 	}
 	
 	// fieldDec := "var" Type IdList [ ";" ]
-	private Field fieldDec() {
+	private ArrayList<Variable> fieldDec() {
+		ArrayList<Variable> fieldList = new ArrayList<Variable>();
 		// le var
 		next();
 
@@ -999,15 +1016,17 @@ public class Compiler {
 			// Verifica se ja foi declarado
 			if(symbolTable.returnAttribute(varName) != null)
 				error("Variable '" + varName + "i' is being redeclared");
-			else
+			else{
 				symbolTable.putAttribute(varName, varObj);
+				fieldList.add(varObj);
+			}
 		}
 
 		if(lexer.token == Token.SEMICOLON) {
 			next();
 		}
 
-		return new Field(type, idList);
+		return fieldList;
 	}
 
 	// type := BasicType | Id
