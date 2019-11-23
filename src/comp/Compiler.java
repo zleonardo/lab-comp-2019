@@ -982,13 +982,13 @@ public class Compiler {
 			else if(primaryExpr.getSecondIdName() != null && primaryExpr.getExprList() == null){
 				classObj = symbolTable.returnClass(primaryExpr.getFirstIdName());
 				if(classObj == null)
-					error("Class " + primaryExpr.getFirstIdName() + "not declared");
+					error("Class " + primaryExpr.getFirstIdName() + " not declared");
 				else
 					primaryExpr.setFirstIdObj(classObj);
 				
 				variableObj = classObj.returnField(primaryExpr.getSecondIdName());
 				if(variableObj == null)
-					error("Variable " + primaryExpr.getSecondIdName() + "not declared");
+					error("Variable " + primaryExpr.getSecondIdName() + " not declared");
 				else{
 					primaryExpr.setSecondIdObj(variableObj);
 					primaryExpr.setType(variableObj.getType());
