@@ -21,9 +21,7 @@ abstract public class Type {
         return name;
     }
 
-    abstract public String getCname();
+	abstract public void genJava(PW pw);
 
-	//abstract public void genJava(PW pw);
-
-    private String name;
+    protected String name;
 }

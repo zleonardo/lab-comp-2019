@@ -13,10 +13,10 @@ public class TypeCianetoClass extends Type {
       super(name);
    }
 
-   @Override
-   public String getCname() {
-      return getName();
-   }
+   // @Override
+   // public String getCname() {
+   //    return getName();
+   // }
    
    public void setOpen(Boolean flag) {
 	   this.open = flag;
@@ -34,6 +34,10 @@ public class TypeCianetoClass extends Type {
       this.fieldList = memberList.getFieldList();
       this.publicMethodList = memberList.getPublicMethodList();
       this.privateMethodList = memberList.getPrivateMethodList();
+   }
+   
+   public void genJava(PW pw){
+      pw.print("\nCLASS\n");
    }
 
    private String name;

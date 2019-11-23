@@ -13,5 +13,8 @@ public class TypeUndefined extends Type {
    public String getCname() {
       return "int";
    }
-   
+
+   public void genJava(PW pw){
+      pw.print("String");
+   }
 }

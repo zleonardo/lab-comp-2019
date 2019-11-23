@@ -9,9 +9,9 @@ import lexer.Token;
 
 public class PrimaryExpr extends Expr {
 	private Token scope = null;
-	private Type type;
+	private Type type = null;
 	private String firstIdName = null, secondIdName = null;
-	private Variable firstIdObj = null, secondIdObj = null;
+	private Type firstIdObj = null, secondIdObj = null;
 	private ExprList exprList = new ExprList();
 
 	public void setScope(Token scope){
@@ -27,7 +27,11 @@ public class PrimaryExpr extends Expr {
 	}
 
 	public Type getType() {
-		return Type.nullType;
+		//remover if quanto finalizado
+		if(this.type == null)
+			return Type.nullType;
+
+		return this.type;
 	}
 
 	public void setFirstIdName(String firstIdName){
@@ -38,11 +42,11 @@ public class PrimaryExpr extends Expr {
 		return this.firstIdName;
 	}
 
-	public void setFirstIdObj(Variable firstIdObj){
+	public void setFirstIdObj(Type firstIdObj){
 		this.firstIdObj = firstIdObj;
 	}
 
-	public Variable getFirstIdObj(){
+	public Type getFirstIdObj(){
 		return this.firstIdObj;
 	}
 
@@ -54,16 +58,20 @@ public class PrimaryExpr extends Expr {
 		return this.secondIdName;
 	}
 
-	public void setSecondIdObj(Variable secondIdObj){
+	public void setSecondIdObj(Type secondIdObj){
 		this.secondIdObj = secondIdObj;
 	}
 
-	public Variable getSecondIdObj(){
+	public Type getSecondIdObj(){
 		return this.secondIdObj;
 	}
 
 	public void setExprList(ExprList exprList){
 		this.exprList = exprList;
+	}
+
+	public ExprList getExprList(){
+		return this.exprList;
 	}
 
 	public void genJava( PW pw ) {

@@ -792,7 +792,7 @@ public class Compiler {
 
 			// semantica
 			if(left.getType() != right.getType())
-			error("operator '" + oper.toString() + "' of '" + left.getType().getCname() + "' expects an '" + left.getType().getCname() + "' value");
+			error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
 		
 			if(left.getType() == Type.booleanType && oper != Token.OR)
 				error("type boolean does not support operation '" + oper.toString() + "'");
@@ -897,8 +897,8 @@ public class Compiler {
 	*/	
 	private Expr primaryExpr() {
 		PrimaryExpr primaryExpr = new PrimaryExpr();
-		Variable v;
-		TypeCianetoClass c;
+		TypeCianetoClass classObj;
+		Variable variableObj;
 		Boolean finished = false;
 
 		// escopo
@@ -951,17 +951,34 @@ public class Compiler {
 
 		// Semantica
 		// Sem self e super
-		if(primaryExpr.getScope() == null)
+		if(primaryExpr.getScope() == null){
 			// apenas id
 			if(primaryExpr.getSecondIdName() == null){
-				Variable v = symbolTable.returnVariable(primaryExpr.getFirstIdName());
-				if(v == null)
-					error("Variable not declared");
+				variableObj = symbolTable.returnVariable(primaryExpr.getFirstIdName());
+				if(variableObj == null)
+					error("Variable " + primaryExpr.getFirstIdName() + "not declared");
 				else{
-					primaryExpr.setFirstIdObj(v);
-					primaryExpr.setType(v.getType());
+					primaryExpr.setFirstIdObj(variableObj);
+					primaryExpr.setType(variableObj.getType());
 				}
 			}
+			// id.id
+			else if(primaryExpr.getSecondIdName() != null && primaryExpr.getExprList() == null){
+				classObj = symbolTable.returnClass(primaryExpr.getFirstIdName());
+				if(classObj == null)
+					error("Class " + primaryExpr.getFirstIdName() + "not declared");
+				else
+					primaryExpr.setFirstIdObj(classObj);
+				
+				variableObj = symbolTable.returnVariable(primaryExpr.getSecondIdName());
+				if(variableObj == null)
+					error("Variable " + primaryExpr.getSecondIdName() + "not declared");
+				else{
+					primaryExpr.setSecondIdObj(variableObj);
+					primaryExpr.setType(variableObj.getType());
+				}
+			}
+		}
 
 		return primaryExpr;
 	}

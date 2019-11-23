@@ -12,8 +12,12 @@ public class TypeNull extends Type {
 	}
 
 	@Override
-	public String getCname() {
+	public String getName() {
 		return "NULL";
 	}
+
+    public void genJava(PW pw){
+        pw.print("null");
+    }
 
 }

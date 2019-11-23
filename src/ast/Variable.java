@@ -4,14 +4,12 @@
 */
 package ast;
 
-public class Variable extends Statement{
-    private String name;
+public class Variable extends Type{
     private Type type;
 
     public Variable(String name){
-        this.name = name;
+        super(name);
     }
-
     public void setType(Type type){
         this.type = type;
     }
@@ -25,7 +23,7 @@ public class Variable extends Statement{
     }
 
     public void genJava(PW pw){
-        pw.print(this.type.getCname());
+        pw.print(this.type.getName());
         pw.print(" ");
         pw.print(name);
         pw.println(";");

@@ -12,7 +12,11 @@ public class TypeString extends Type {
     }
     
    public String getCname() {
-      return "char *";
+      return "String";
    }
+
+    public void genJava(PW pw){
+        pw.print("String");
+    }
 
 }
