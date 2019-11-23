@@ -224,6 +224,7 @@ public class Compiler {
 			error("Error: Class " + lexer.getStringValue() + "has already been declared");
 		else{
 			classObj = new TypeCianetoClass(className);
+			
 			classObj.setOpen(flagOpen);
 			
 			if ( lexer.token == Token.EXTENDS ) {
@@ -244,12 +245,17 @@ public class Compiler {
 					error("Class " + superClassName + " is not open");
 
 				classObj.setSuperClass(superClassObj);
+				
+				//Insere a classe incompleta no symboltable 
+				symbolTable.putClass(className, classObj);
+
 				next();
 			}
 
 			classObj.setMemberList(memberList());
 
-			//Insere a classe no symboltable
+			//Insere a classe completa no symboltable
+			symbolTable.removeClass(className);
 			symbolTable.putClass(className, classObj);
 		}
 
@@ -892,12 +898,20 @@ public class Compiler {
 	// objectCreation := Id "." "new"
 	// REVISAR
 	// joguei pra dentro do primary
-	private void objectCreation(){
+	private Expr objectCreation(PrimaryExpr primaryExpr){
+		// le new
 		next();
-		check(Token.DOT, "'.' was expected after id");
-		next();
-		check(Token.NEW, "'new' was expected after '.'");
-		next();
+
+		// semantica
+		TypeCianetoClass classObj = symbolTable.returnClass(primaryExpr.getFirstIdName());
+		if(classObj == null)
+			error("Type " + primaryExpr.getFirstIdName() + "not found");
+		else{
+			primaryExpr.setFirstIdObj(classObj);
+			primaryExpr.setType(classObj);
+		}
+
+		return primaryExpr;
 	}
 	
 	/*  primaryExpr :=	"super" "." Id |
@@ -943,7 +957,7 @@ public class Compiler {
 			if(lexer.token == Token.DOT) {
 				next();
 				if(lexer.token == Token.NEW) {
-					next();
+					return objectCreation(primaryExpr);
 				}else if(lexer.token == Token.ID || lexer.token == Token.PRINT) {
 					next();
 					primaryExpr.setSecondIdName(lexer.getStringValue());

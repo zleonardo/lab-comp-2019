@@ -58,6 +58,10 @@ public class SymbolTable {
         this.classesTable.put(chave, valor);
     }
 
+    public void removeClass(String chave) {
+        this.classesTable.remove(chave);
+    }
+
     public void putMethod(String chave, Object valor) {
         this.methodsTable.put(chave, valor);
     }
