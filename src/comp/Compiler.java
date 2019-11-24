@@ -577,10 +577,33 @@ public class Compiler {
 			next();
 			assignExpr.setRightExpr(expr());
 			
-			/*if(assignExpr.getLeft().getType() != assignExpr.getRight().getType()) {
-				error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+			//System.out.println(assignExpr.getLeft());
+			Expr left = assignExpr.getLeft();
+			//System.out.println(left.getType());
+			Expr right = assignExpr.getRight();
+			//System.out.println(right.getType());
+			
+			//TERMINAR!
+			if(assignExpr.getLeft().getType() == Type.booleanType) {
+				if(assignExpr.getRight().getType() == Type.intType) {
+					error("'int' cannot be assigned to 'boolean'");
+				}
+			}else if(assignExpr.getLeft().getType() == Type.intType) {
+				if(assignExpr.getRight().getType() == Type.booleanType) {
+					error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+				}else if(assignExpr.getRight().getType() == Type.nullType) {
+					error("Variável de tipo básico não pode receber 'nil'");
+				}else if(assignExpr.getRight().getType() != Type.intType) {
+					error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+				}
+			}else if(assignExpr.getLeft().getType() == Type.stringType) {
+				
+			}/*else if(!left.getType().equals(right.getType())) {
+				// Classes
 				
 			}*/
+				//error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+			//}
 		}
 		
 		return assignExpr;
@@ -830,6 +853,14 @@ public class Compiler {
 				Token relation = lexer.token;
 				next();
 				Expr right = simpleExpr();
+				//System.out.println(left.getType());
+				//System.out.println(left.getType());
+				
+				/*if(relation == Token.EQ || relation == Token.NEQ) {
+					if (left.getType().equals("null") && right.getType().equals("nil")) {
+						
+					}
+				}*/
 				CompositeExpr ce = new CompositeExpr(left,  relation, right);
 				ce.setType(Type.booleanType);
 				left = ce;
@@ -1036,27 +1067,28 @@ public class Compiler {
 				// le ponto
 				next();
 		}
-		
-		//System.out.println("Dentro: " + lexer.getStringValue());
 
 		if(lexer.token == Token.IN)
 			return readExpr();
 		else if(!finished && lexer.token == Token.ID || lexer.token == Token.PRINT){
 			primaryExpr.setFirstIdName(lexer.getStringValue());
+			//System.out.println(lexer.getStringValue());
 			Variable ok = symbolTable.returnAttribute(lexer.getStringValue());
-			//System.out.println("Dentro: " + ok.getType() + " " + ok.getName());
 			Variable ok1 = symbolTable.returnVariable(lexer.getStringValue());
-			//System.out.println("Dentro: " + ok.getType() + " " + ok.getName());
 			if(ok != null) {
-				//System.out.println("Dentro: " + ok.getType() + " " + ok.getName());
 				primaryExpr.setType(ok.getType());
 			}
 			if(ok1 != null) {
 				primaryExpr.setType(ok1.getType());
 			}
+			if(primaryExpr.getScope() == Token.SUPER) {
+			}
 			next();
 			if(lexer.token == Token.DOT) {
 				next();
+				/*if(ok1 != null || ok != null) {
+					error("Message send to a non-object receiver");
+				}*/
 				if(lexer.token == Token.NEW) {
 					return objectCreation(primaryExpr);
 				}else if(lexer.token == Token.ID || lexer.token == Token.PRINT) {
@@ -1065,7 +1097,17 @@ public class Compiler {
 				}else if(lexer.token == Token.IDCOLON) {
 					primaryExpr.setSecondIdName(lexer.getStringValue());
 					next();
-					primaryExpr.setExprList(exprList());
+					ExprList expr = exprList();
+					primaryExpr.setExprList(expr);
+					
+					/*for(int i = 0; i < expr.getTamanho(); i++) {
+						if(expr.getVetor(i) != null) {
+							if(expr.getVetor(i).getType() != Type.booleanType || expr.getVetor(i).getType() != Type.stringType || expr.getVetor(i).getType() != Type.intType) {
+								error("Variable not found");
+							}
+						}
+					}*/
+					
 				}
 			}
 			finished = true;
@@ -1074,6 +1116,7 @@ public class Compiler {
 			primaryExpr.setFirstIdName(lexer.getStringValue());
 			next();
 			primaryExpr.setExprList(exprList());
+			
 		}
 		else{
 			error("Expression expected");

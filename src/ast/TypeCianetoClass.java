@@ -8,6 +8,7 @@ package ast;
 import java.util.ArrayList;
 
 public class TypeCianetoClass extends Type {
+	
 
 	public TypeCianetoClass( String name ) {
 		super(name);
