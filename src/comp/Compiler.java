@@ -76,6 +76,7 @@ public class Compiler {
 		// Verifica se existe uma funcao Program
 		try {
 			if (symbolTable.returnClass("Program") == null) {
+				lexer.lineNumber--;
 				error("Source code without a class 'Program'");
 			}
 		} catch (CompilerError e) {
@@ -204,7 +205,7 @@ public class Compiler {
 	private TypeCianetoClass classDec() {
 		Boolean	flagOpen = false;
 		TypeCianetoClass classObj = null;
-		String className;
+		
 		String superClassName;
 
 		if ( lexer.token == Token.ID && lexer.getStringValue().equals("open") ) {
@@ -252,15 +253,22 @@ public class Compiler {
 				next();
 			}
 
-			classObj.setMemberList(memberList());
-
 			//Insere a classe completa no symboltable
 			symbolTable.removeClass(className);
 			symbolTable.putClass(className, classObj);
-		}
+			
+			classObj.setMemberList(memberList());
 
+		}
 		check(Token.END, "'end' expected");
 		next();
+		
+		if(className.equals("Program")) {
+			if(symbolTable.returnMethod("run") == null) {
+				lexer.lineNumber--;
+				error("Method 'run' was not found in class 'Program'");
+			}
+		}
 
 		//Limpa a hash das variaveis globais e funcoes
 		symbolTable.resetAttibutes();
@@ -277,6 +285,7 @@ public class Compiler {
 		while ( true ) {
 			
 			String qualifier = qualifier();
+			Copiaqualifier = qualifier;
 			
 			// member := fieldDec | methodDec
 			if ( lexer.token == Token.VAR ) {
@@ -286,6 +295,7 @@ public class Compiler {
 			}
 			else if ( lexer.token == Token.FUNC ) {
 				method = methodDec();
+				
 				// nao sei como tratar casos que nao tem private nem public
 				if (qualifier != null && qualifier.contains("private"))
 					memberList.addPrivateMethod(method);
@@ -296,8 +306,6 @@ public class Compiler {
 				break;
 			}
 		}
-		
-		//VERIFICAR SE NA CLASSE PROGRAM TEM A FUNCAO RUN. OBRIGATORIO!!!
 		
 		return memberList;
 	}
@@ -355,7 +363,8 @@ public class Compiler {
 	//				"func" Id [ "->" Type ] "{" StatementList"}"
 	private Method methodDec() {
 		Method method = null;
-		// Boolean flagReturn = false;
+		Boolean flagReturn = false;
+		verificaReturn = false;
 		//metodoAtual = null;
 		
 		// le func
@@ -371,8 +380,19 @@ public class Compiler {
 			if ( lexer.token == Token.ID || lexer.token == Token.PRINT) {
 				// unary method
 				method = new Method(lexer.getStringValue());
+				
+				if(className.equals("Program")) {
+					if(method.getName().equals("run")) {
+						//lexer.lineNumber--;
+						if(Copiaqualifier != null && Copiaqualifier.equals("private")) {
+							error("Method 'run' of class 'Program' cannot be private");
+						}	
+					}
+				}
+				
 				symbolTable.putMethod(lexer.getStringValue(), method);
 				next();
+				
 				
 				metodoAtual = method;
 				
@@ -390,17 +410,12 @@ public class Compiler {
 				error("An identifier or identifer: was expected after 'func'");
 			}
 			
-			if(metodoAtual.getName().equals("run:") || metodoAtual.getName().equals("run")) {
-				if(metodoAtual.getParametro().size() > 0) {
-					error("metodo 'run' nao deve tomar parametros");
-				}
-			}
-			
 			if ( lexer.token == Token.MINUS_GT ) {
 				// method declared a return type
 				next();
 				Type s = type();
-				//metodoAtual.setType(s.get);
+				metodoAtual.setType(s);
+				flagReturn = true;
 			}
 			
 			
@@ -408,11 +423,14 @@ public class Compiler {
 			next();
 
 			statementList();
+			
+			// Verificar se há um return quando tem um tipo de retorno declarado
+			if(flagReturn == true && verificaReturn == false) {
+				check(Token.RETURN, "Missing 'return' statement in method " + metodoAtual.getName());
+			}
+			
 			check(Token.RIGHTCURBRACKET, "'}' expected");
 			
-			// if(flagReturn) {
-				
-			// }
 		}
 
 		next();
@@ -442,6 +460,10 @@ public class Compiler {
 	private ParamDec paramDec() {
 		String id = "";
 		Type type = type();
+		
+		if(metodoAtual.getName().equals("run:") || metodoAtual.getName().equals("run")) {
+				error("metodo 'run' nao deve tomar parametros");
+		}
 
 		if(lexer.token != Token.ID){
 			error("Id was expected");
@@ -544,15 +566,10 @@ public class Compiler {
 			next();
 			assignExpr.setRightExpr(expr());
 			
-			if(assignExpr.getLeft().getType() != assignExpr.getRight().getType())
-			// System.out.println(assignExpr.getLeft());
-			// System.out.println(assignExpr.getRight());
-			
-			// System.out.println(assignExpr.getLeft().getType());
-			// System.out.println(assignExpr.getRight().getType());
-			
-			// if(assignExpr.getLeft().getType() != assignExpr.getRight().getType())
+			/*if(assignExpr.getLeft().getType() != assignExpr.getRight().getType()) {
 				error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+				
+			}*/
 		}
 		
 		return assignExpr;
@@ -572,9 +589,11 @@ public class Compiler {
 		for(int i = 0; i < idList.size(); i++){
 			Variable varObj = idList.getVariable(i);
 			String varName = varObj.getName();
+			
 			// Verifica se ja foi declarado
-			if(symbolTable.returnVariable(varName) != null)
+			if(symbolTable.returnVariable(varName) != null) {
 				error("Variable '" + varName + "' is being redeclared");
+			}
 			else
 				symbolTable.putVariable(varName, varObj);
 		}
@@ -591,12 +610,22 @@ public class Compiler {
 
 		return localDec;
 	}
+
 	
 	// idList := Id { "," Id } 
 	private IdList idList(Type type) {
 		IdList idlist = new IdList();
 
 		String varName = lexer.getStringValue();
+		
+		//Palavra reservada
+		//Precisa verificar se é um numero
+		for (Token t : Token.values()) {
+	        if (varName.equals(t.name().toLowerCase()) || varName.equals("Boolean")){
+	        	error("Identifier expected");
+	        }
+	    }
+		
 		Variable varObj = new Variable(varName);
 		varObj.setType(type);
 		idlist.add(varObj);
@@ -606,6 +635,15 @@ public class Compiler {
 			next();
 
 			check(Token.ID, "Identifier expected");
+			varName = lexer.getStringValue();
+			
+			//Palavra reservada
+			for (Token t : Token.values()) {
+		        if (varName.equals(t.name().toLowerCase())) {
+		            error("Identifier expected");
+		        }
+		    }
+			
 			varObj = new Variable(varName);
 			varObj.setType(type);
 			idlist.add(varObj);
@@ -658,6 +696,7 @@ public class Compiler {
 	// returnStat := "return" expr
 	private ReturnStat returnStat() {
 		// ja leu o "return" no statement
+		verificaReturn = true;
 		next();
 		return new ReturnStat(expr());
 	}
@@ -741,10 +780,9 @@ public class Compiler {
 		ExprList expr = exprList();
 		
 		for(int i = 0; i < expr.getTamanho(); i++) {
-			//System.out.println(expr.getVetor(i).getType());
 			if(expr.getVetor(i) == null) {
 				error("Command ' Out.print' without arguments");
-			}else if(expr.getVetor(i).getType().equals("boolean")) {
+			}else if(expr.getVetor(i).getType() == Type.booleanType) {
 				error("Attempt to print a boolean expression");
 			}
 		}
@@ -826,12 +864,13 @@ public class Compiler {
 			next();
 
 			Expr right = term();
+			
+			//System.out.println(left.getType());
 
 			CompositeExpr ce = new CompositeExpr(left, oper, right);
-
-			// semantica
+			
 			if(left.getType() != right.getType())
-				error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
+				error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + right.getType().getName() + "' value");
 			else
 				ce.setType(left.getType());
 
@@ -863,6 +902,7 @@ public class Compiler {
 			CompositeExpr ce = new CompositeExpr(left,  oper, right);
 			
 			// semantica
+			
 			if(left.getType() != right.getType())
 				error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + left.getType().getName() + "' value");
 			else
@@ -984,11 +1024,24 @@ public class Compiler {
 				// le ponto
 				next();
 		}
+		
+		//System.out.println("Dentro: " + lexer.getStringValue());
 
 		if(lexer.token == Token.IN)
 			return readExpr();
 		else if(!finished && lexer.token == Token.ID || lexer.token == Token.PRINT){
 			primaryExpr.setFirstIdName(lexer.getStringValue());
+			Variable ok = symbolTable.returnAttribute(lexer.getStringValue());
+			//System.out.println("Dentro: " + ok.getType() + " " + ok.getName());
+			Variable ok1 = symbolTable.returnVariable(lexer.getStringValue());
+			//System.out.println("Dentro: " + ok.getType() + " " + ok.getName());
+			if(ok != null) {
+				//System.out.println("Dentro: " + ok.getType() + " " + ok.getName());
+				primaryExpr.setType(ok.getType());
+			}
+			if(ok1 != null) {
+				primaryExpr.setType(ok1.getType());
+			}
 			next();
 			if(lexer.token == Token.DOT) {
 				next();
@@ -1021,8 +1074,11 @@ public class Compiler {
 			// apenas id
 			if(primaryExpr.getSecondIdName() == null){
 				variableObj = symbolTable.returnVariable(primaryExpr.getFirstIdName());
-				if(variableObj == null)
-					error("Variable " + primaryExpr.getFirstIdName() + "not declared");
+				if(variableObj == null) {
+					if(!primaryExpr.getFirstIdName().equals("nil")) {
+						error("Variable " + primaryExpr.getFirstIdName() + " not declared");
+					}
+				}
 				else{
 					primaryExpr.setFirstIdObj(variableObj);
 					primaryExpr.setType(variableObj.getType());
@@ -1037,8 +1093,13 @@ public class Compiler {
 					primaryExpr.setFirstIdObj(classObj);
 				
 				variableObj = classObj.returnField(primaryExpr.getSecondIdName());
-				if(variableObj == null)
-					error("Variable " + primaryExpr.getSecondIdName() + " not declared");
+				if(variableObj == null) {
+					System.out.println("Segundo " + primaryExpr.getSecondIdName());
+					if(primaryExpr.getSecondIdName() != "nil") {
+						System.out.println("Entrou segundo");
+						error("Variable " + primaryExpr.getSecondIdName() + " not declared");;
+					}
+				}
 				else{
 					primaryExpr.setSecondIdObj(variableObj);
 					primaryExpr.setType(variableObj.getType());
@@ -1164,5 +1225,8 @@ public class Compiler {
 	private Lexer			lexer;
 	private ErrorSignaller	signalError;
 	private Method metodoAtual;
+	private Boolean verificaReturn = false;
+	private String className;
+	private String Copiaqualifier;
 
 }

@@ -369,7 +369,7 @@ public class Lexer {
     private char []input;
 
     // number of current line. Starts with 1
-    private int lineNumber;
+    public int lineNumber;
 
     private ErrorSignaller error;
 
