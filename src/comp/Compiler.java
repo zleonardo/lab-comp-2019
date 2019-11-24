@@ -383,7 +383,6 @@ public class Compiler {
 				
 				if(className.equals("Program")) {
 					if(method.getName().equals("run")) {
-						//lexer.lineNumber--;
 						if(Copiaqualifier != null && Copiaqualifier.equals("private")) {
 							error("Method 'run' of class 'Program' cannot be private");
 						}	
@@ -412,6 +411,13 @@ public class Compiler {
 			
 			if ( lexer.token == Token.MINUS_GT ) {
 				// method declared a return type
+				
+				if(className.equals("Program")) {
+					if(method.getName().equals("run")) {
+						error("Method 'run' of class 'Program' with a return value type");
+					}
+				}
+				
 				next();
 				Type s = type();
 				metodoAtual.setType(s);
@@ -427,6 +433,11 @@ public class Compiler {
 			// Verificar se há um return quando tem um tipo de retorno declarado
 			if(flagReturn == true && verificaReturn == false) {
 				check(Token.RETURN, "Missing 'return' statement in method " + metodoAtual.getName());
+			}
+			
+			if(flagReturn == false && verificaReturn == true) {
+				lexer.lineNumber--;
+				check(Token.RETURN, "Illegal 'return' statement. Method returns 'void'");
 			}
 			
 			check(Token.RIGHTCURBRACKET, "'}' expected");
@@ -621,7 +632,7 @@ public class Compiler {
 		//Palavra reservada
 		//Precisa verificar se é um numero
 		for (Token t : Token.values()) {
-	        if (varName.equals(t.name().toLowerCase()) || varName.equals("Boolean")){
+	        if (varName.equals(t.name().toLowerCase()) || varName.equals("Boolean") || varName.equals("Int") || varName.equals("String")){
 	        	error("Identifier expected");
 	        }
 	    }
@@ -639,8 +650,8 @@ public class Compiler {
 			
 			//Palavra reservada
 			for (Token t : Token.values()) {
-		        if (varName.equals(t.name().toLowerCase())) {
-		            error("Identifier expected");
+		        if (varName.equals(t.name().toLowerCase()) || varName.equals("Boolean") || varName.equals("Int") || varName.equals("String")){
+		        	error("Identifier expected");
 		        }
 		    }
 			
@@ -780,6 +791,7 @@ public class Compiler {
 		ExprList expr = exprList();
 		
 		for(int i = 0; i < expr.getTamanho(); i++) {
+			//System.out.println(expr.getVetor(i).getType());
 			if(expr.getVetor(i) == null) {
 				error("Command ' Out.print' without arguments");
 			}else if(expr.getVetor(i).getType() == Type.booleanType) {
