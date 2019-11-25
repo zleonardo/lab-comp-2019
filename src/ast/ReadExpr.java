@@ -17,8 +17,8 @@ public class ReadExpr extends Expr {
 			type = Type.intType;
 		else if(readType == Token.READSTRING)
 			type = Type.stringType;
-		else
-			type = Type.nullType;
+		//else
+			//type = Type.nullType;
 	}
 
 	public Type getType() {

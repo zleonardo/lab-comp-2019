@@ -204,7 +204,6 @@ public class Compiler {
 	// classDec := [ "open" ] "class" Id [ "extends" Id] memberList "end"
 	private TypeCianetoClass classDec() {
 		Boolean	flagOpen = false;
-		TypeCianetoClass classObj = null;
 		
 		String superClassName;
 
@@ -231,7 +230,7 @@ public class Compiler {
 			if ( lexer.token == Token.EXTENDS ) {
 				next();
 
-				check(Token.ID, "Identifier expected");
+				check(Token.ID, "Class expected");
 				superClassName = lexer.getStringValue();
 				
 				TypeCianetoClass superClassObj = symbolTable.returnClass(superClassName);
@@ -272,6 +271,7 @@ public class Compiler {
 
 		//Limpa a hash das variaveis globais e funcoes
 		symbolTable.resetAttibutes();
+		//TIREI AQUI PQ PODE SER OVERRIDE
 		symbolTable.resetMethods();
 
 		return classObj;
@@ -356,6 +356,11 @@ public class Compiler {
 				return "shared private";
 			}
 		}
+		else {
+			if(lexer.getStringValue().toUpperCase().equals(lexer.getStringValue())) {
+				error("'public', 'private' or '}' expected");
+			}
+		}
 		return null;
 	}
 
@@ -370,7 +375,7 @@ public class Compiler {
 		// le func
 		next();
 		
-		//Verificar se ja existe um metodo ou atributo com o mesmo nome
+		//Verificar ou atributo com o mesmo nome
 		if(symbolTable.returnMethod(lexer.getStringValue()) != null) 
 			error("Method '" + lexer.getStringValue() + "' is being redeclared");
 		else if(symbolTable.returnAttribute(lexer.getStringValue()) != null) 
@@ -409,6 +414,7 @@ public class Compiler {
 				error("An identifier or identifer: was expected after 'func'");
 			}
 			
+			
 			if ( lexer.token == Token.MINUS_GT ) {
 				// method declared a return type
 				
@@ -424,6 +430,21 @@ public class Compiler {
 				flagReturn = true;
 			}
 			
+			//if(Copiaqualifier.equals("override")){
+				
+			//}
+			//Verifica override
+			/*Method metodoSuper = (Method) symbolTable.returnMethod(method.getName());
+			System.out.println(metodoAtual.getName());
+			System.out.println(metodoSuper.getName());
+
+			TypeCianetoClass checando = symbolTable.returnClass(classObj.getSuperClass().toString());
+			TypeCianetoClass superClass = classObj.getSuperClass();
+			
+			if(checando != null && ) {
+				
+			}*/
+			
 			
 			check(Token.LEFTCURBRACKET, "'{' expected");
 			next();
@@ -432,7 +453,7 @@ public class Compiler {
 			
 			// Verificar se há um return quando tem um tipo de retorno declarado
 			if(flagReturn == true && verificaReturn == false) {
-				check(Token.RETURN, "Missing 'return' statement in method " + metodoAtual.getName());
+				check(Token.RETURN, "Missing 'return' statement");
 			}
 			
 			if(flagReturn == false && verificaReturn == true) {
@@ -473,7 +494,7 @@ public class Compiler {
 		Type type = type();
 		
 		if(metodoAtual.getName().equals("run:") || metodoAtual.getName().equals("run")) {
-				error("metodo 'run' nao deve tomar parametros");
+				error("Method 'run:' of class 'Program' cannot take parameters");
 		}
 
 		if(lexer.token != Token.ID){
@@ -562,6 +583,9 @@ public class Compiler {
 		AssignExpr assignExpr = new AssignExpr();
 		
 		if (lexer.token == Token.ID || lexer.token == Token.SELF || lexer.token == Token.SUPER){
+			if(symbolTable.returnAttribute((lexer.getStringValue())) != null && lexer.token != Token.SELF){
+				error("");
+			}
 			if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
 				if(lexer.token != Token.SELF && lexer.token != Token.SUPER) {
 					error("Variable '" + lexer.getStringValue() + "' was not declared");
@@ -577,12 +601,6 @@ public class Compiler {
 			next();
 			assignExpr.setRightExpr(expr());
 			
-			//System.out.println(assignExpr.getLeft());
-			Expr left = assignExpr.getLeft();
-			//System.out.println(left.getType());
-			Expr right = assignExpr.getRight();
-			//System.out.println(right.getType());
-			
 			//TERMINAR!
 			if(assignExpr.getLeft().getType() == Type.booleanType) {
 				if(assignExpr.getRight().getType() == Type.intType) {
@@ -592,16 +610,16 @@ public class Compiler {
 				if(assignExpr.getRight().getType() == Type.booleanType) {
 					error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
 				}else if(assignExpr.getRight().getType() == Type.nullType) {
-					error("Variável de tipo básico não pode receber 'nil'");
+					error("Type error: 'nil' cannot be assigned to a variable of a basic type");
 				}else if(assignExpr.getRight().getType() != Type.intType) {
 					error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
 				}
 			}else if(assignExpr.getLeft().getType() == Type.stringType) {
 				
-			}/*else if(!left.getType().equals(right.getType())) {
+			}//else if(!left.getType().equals(right.getType())) {
 				// Classes
 				
-			}*/
+			//}
 				//error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
 			//}
 		}
@@ -732,7 +750,12 @@ public class Compiler {
 		// ja leu o "return" no statement
 		verificaReturn = true;
 		next();
-		return new ReturnStat(expr());
+		
+		Expr e = expr();
+		
+		//System.out.println(e.getType().getName());
+		
+		return new ReturnStat(e);
 	}
 
 	// whileStat := "while" expr "{" StatementList "}"
@@ -813,12 +836,19 @@ public class Compiler {
 		next();
 		ExprList expr = exprList();
 		
+		//if(expr.getTamanho() == 0) {
+			//error("Command ' Out.print' without arguments");
+		//}
+		
 		for(int i = 0; i < expr.getTamanho(); i++) {
-			//System.out.println(expr.getVetor(i).getType());
+			//System.out.println(expr.getVetor(i));
 			if(expr.getVetor(i) == null) {
 				error("Command ' Out.print' without arguments");
 			}else if(expr.getVetor(i).getType() == Type.booleanType) {
 				error("Attempt to print a boolean expression");
+			// é classe
+			}else if(expr.getVetor(i).getType() != Type.intType && expr.getVetor(i).getType() != Type.stringType && expr.getVetor(i).getType() != Type.nullType) {
+				error("Command 'write' does not accept objects");
 			}
 		}
 	}
@@ -853,14 +883,19 @@ public class Compiler {
 				Token relation = lexer.token;
 				next();
 				Expr right = simpleExpr();
-				//System.out.println(left.getType());
-				//System.out.println(left.getType());
+				
+				//System.out.println(left.getType().getName());
+				//TypeCianetoClass classe1 = left.getType().getName();
+				//System.out.println(right.getType().getName());
+				
+				//NA HORA DE COMPARAR AS CLASSES TEM QUE VER SE UMA É HERDADA DA OUTRA. TRETA!!!
 				
 				/*if(relation == Token.EQ || relation == Token.NEQ) {
-					if (left.getType().equals("null") && right.getType().equals("nil")) {
-						
+					if (left.getType().getName() != right.getType().getName()) {
+						error("Incompatible types cannot be compared with '" + relation.toString() + "' because the result will always be 'false'");
 					}
 				}*/
+				
 				CompositeExpr ce = new CompositeExpr(left,  relation, right);
 				ce.setType(Type.booleanType);
 				left = ce;
@@ -907,8 +942,6 @@ public class Compiler {
 			next();
 
 			Expr right = term();
-			
-			//System.out.println(left.getType());
 
 			CompositeExpr ce = new CompositeExpr(left, oper, right);
 			
@@ -1052,6 +1085,10 @@ public class Compiler {
 
 		// escopo
 		if(lexer.token == Token.SUPER){
+			if(className.equals("Program")) {
+				error("'super' used in class 'Program' that does not have a superclas");
+			}
+			
 			primaryExpr.setScope(Token.SUPER);
 			next();
 
@@ -1072,7 +1109,6 @@ public class Compiler {
 			return readExpr();
 		else if(!finished && lexer.token == Token.ID || lexer.token == Token.PRINT){
 			primaryExpr.setFirstIdName(lexer.getStringValue());
-			//System.out.println(lexer.getStringValue());
 			Variable ok = symbolTable.returnAttribute(lexer.getStringValue());
 			Variable ok1 = symbolTable.returnVariable(lexer.getStringValue());
 			if(ok != null) {
@@ -1119,8 +1155,9 @@ public class Compiler {
 			
 		}
 		else{
-			error("Expression expected");
-			//return primaryExpr;
+			//return 
+			//error("Expression expected");
+			return primaryExpr;
 		}
 
 		// Semantica
@@ -1149,9 +1186,9 @@ public class Compiler {
 				
 				variableObj = classObj.returnField(primaryExpr.getSecondIdName());
 				if(variableObj == null) {
-					System.out.println("Segundo " + primaryExpr.getSecondIdName());
+					
 					if(primaryExpr.getSecondIdName() != "nil") {
-						System.out.println("Entrou segundo");
+					
 						error("Variable " + primaryExpr.getSecondIdName() + " not declared");;
 					}
 				}
@@ -1181,7 +1218,7 @@ public class Compiler {
 			String varName = varObj.getName();
 			// Verifica se ja foi declarado
 			if(symbolTable.returnAttribute(varName) != null)
-				error("Variable '" + varName + "i' is being redeclared");
+				error("Variable '" + varName + " is being redeclared");
 			else{
 				symbolTable.putAttribute(varName, varObj);
 				fieldList.add(varObj);
@@ -1198,13 +1235,15 @@ public class Compiler {
 	// type := BasicType | Id
 	private Type type() {
 		Type type = null;
-
 		if ( lexer.token == Token.INT || lexer.token == Token.BOOLEAN || lexer.token == Token.STRING ) {
 			type = basicType();
 			next();
 		}
 		else if ( lexer.token == Token.ID ) {
 			type = symbolTable.returnClass(lexer.getStringValue());
+			if(type == null) {
+				error("Type '" + lexer.getStringValue() + "' was not found");
+			}
 			next();
 		}
 
@@ -1266,13 +1305,18 @@ public class Compiler {
 		next();
 
 		if(lexer.token == Token.READINT || lexer.token == Token.READSTRING){
+			Token token = lexer.token;
 			next();
-			return new ReadExpr(lexer.token);
+			return new ReadExpr(token);
+		}
+		if(lexer.getStringValue() != "") {
+			error("Unknown method '" + lexer.getStringValue() + "'");
 		}
 		else{
 			error("Command 'In.' without arguments");
-			return null;
 		}
+		
+		return null;
 	}
 
 	private boolean outsideWhileRepeatUntil = true;
@@ -1283,5 +1327,6 @@ public class Compiler {
 	private Boolean verificaReturn = false;
 	private String className;
 	private String Copiaqualifier;
+	private TypeCianetoClass classObj = null;
 
 }

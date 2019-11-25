@@ -18,6 +18,10 @@ public class TypeCianetoClass extends Type {
 	// public String getCname() {
 	//    return getName();
 	// }
+	
+	public String getType() {
+		return getName();
+	}
 
 	public void setOpen(Boolean flag) {
 		this.open = flag;
@@ -29,6 +33,10 @@ public class TypeCianetoClass extends Type {
 
 	public void setSuperClass(TypeCianetoClass superClass){
 		this.superclass = superClass;
+	}
+	
+	public TypeCianetoClass getSuperClass() {
+		return superclass;
 	}
 
 	public void setMemberList(MemberList memberList){
