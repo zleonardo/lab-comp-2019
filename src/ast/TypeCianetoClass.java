@@ -56,7 +56,38 @@ public class TypeCianetoClass extends Type {
 	}
 
 	public void genJava(PW pw){
-		pw.print("\nCLASS\n");
+		/*if(open) {
+			pw.println("open");
+		}*/
+		pw.print("class " + getName());
+		if(this.superclass != null) {
+			pw.print("extends " + this.getSuperClass().name);
+		}
+		pw.println(" {");
+		
+		for( Variable list : this.fieldList ){
+			
+            list.genJava(pw);
+            pw.println("");
+        }
+		
+		//System.out.println(publicMethodList);
+		//System.out.println(privateMethodList);
+		
+		if(publicMethodList != null) {
+			pw.add();
+			pw.print("public ");
+			publicMethodList.genJava(pw);
+		}
+		
+		/*if(privateMethodList != null) {
+			pw.add();
+			pw.print("private ");
+			privateMethodList.genJava(pw);
+		}*/
+		
+		pw.println("}");
+		
 	}
 
 	private String name;

@@ -32,6 +32,11 @@ public class Program {
 	}*/
 
 	public void genJava(PW pw) {
+		
+		for(TypeCianetoClass classe : this.classList ) {
+			classe.genJava(pw);
+			pw.println("");
+		}
 	}
 	
 	public ArrayList<TypeCianetoClass> getClassList() {

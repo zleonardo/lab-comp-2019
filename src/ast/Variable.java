@@ -25,7 +25,7 @@ public class Variable extends Type{
     public void genJava(PW pw){
         pw.print(this.type.getName());
         pw.print(" ");
-        pw.print(name);
+        pw.print(this.getName());
         pw.println(";");
 	}
 }

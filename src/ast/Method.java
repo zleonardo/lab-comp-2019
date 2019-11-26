@@ -9,6 +9,7 @@ public class Method {
 	private String name;
 	private Type type;
 	private ArrayList<ParamDec> parametros = new ArrayList<ParamDec>();
+	private StatementList statList;
 
 	public Method(String name){
 		this.name = name;
@@ -16,6 +17,10 @@ public class Method {
 	
 	public String getName() {
 		return this.name;
+	}
+	
+	public void addStat(StatementList statlist) {
+		this.statList = statlist;
 	}
 	
 	public void setType(Type type) {
@@ -35,7 +40,29 @@ public class Method {
 	}
 
 	public void genJava(PW pw){
-
+		pw.add();
+		
+		if(this.type == null) {
+			pw.print("void ");
+		}else {
+			pw.print(" " + this.type.toString() + " ");
+		}
+		pw.print(this.name);
+		pw.print(" (");
+		
+		for(ParamDec p : this.parametros){
+					
+			p.genJava(pw);
+		    pw.println(" ");
+		}
+		
+		pw.println(") {");
+		
+		pw.add();
+		System.out.println("Aqui");
+		this.statList.genJava(pw);
+		System.out.println("Passou");
+		pw.sub();
+        pw.println("}");
 	}
-
 }

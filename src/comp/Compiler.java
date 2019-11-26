@@ -426,7 +426,8 @@ public class Compiler {
 				
 				next();
 				Type s = type();
-				metodoAtual.setType(s);
+				method.setType(s);
+				metodoAtual = method;
 				flagReturn = true;
 			}
 			
@@ -515,7 +516,9 @@ public class Compiler {
 	
 	// statementList := { Statement }
 	private StatementList statementList() {
+		
 		StatementList statList = new StatementList();
+		metodoAtual.addStat(statList);
 
 		while (lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.UNTIL){
 			statList.addStat(statement());
@@ -833,15 +836,12 @@ public class Compiler {
 		check(Token.IDCOLON, "'print:' or 'println:' was expected after 'Out.'");
 		// precisa criar a classe Out
 		String printName = lexer.getStringValue();
+		Out write = new Out(printName);
 		next();
 		ExprList expr = exprList();
-		
-		//if(expr.getTamanho() == 0) {
-			//error("Command ' Out.print' without arguments");
-		//}
+		write.setExpr(expr);
 		
 		for(int i = 0; i < expr.getTamanho(); i++) {
-			//System.out.println(expr.getVetor(i));
 			if(expr.getVetor(i) == null) {
 				error("Command ' Out.print' without arguments");
 			}else if(expr.getVetor(i).getType() == Type.booleanType) {

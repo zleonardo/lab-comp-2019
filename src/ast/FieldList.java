@@ -14,7 +14,11 @@ public class FieldList {
 	}
 
 	public void genJava(PW pw){
-
+		
+		for( Field list : this.fieldList ){
+            list.genJava(pw);
+            pw.println("");
+        }
 	}
 
 }
