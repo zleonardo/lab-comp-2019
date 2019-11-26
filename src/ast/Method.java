@@ -59,10 +59,8 @@ public class Method {
 		pw.println(") {");
 		
 		pw.add();
-		System.out.println("Aqui");
 		this.statList.genJava(pw);
-		System.out.println("Passou");
 		pw.sub();
-        pw.println("}");
+        //pw.println("}");
 	}
 }

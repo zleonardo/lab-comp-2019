@@ -23,7 +23,7 @@ public class ExprList{
     }
 
     public void genJava(PW pw){
-        if(this.exprList.size() > 0){
+        /*if(this.exprList.size() > 0){
             // printa primeiro parametro
             Expr v = this.exprList.get(0);
             v.genJava(pw);
@@ -34,6 +34,6 @@ public class ExprList{
                 v = this.exprList.get(i);
                 v.genJava(pw);
             }
-        }
+        }*/
 	}
 }

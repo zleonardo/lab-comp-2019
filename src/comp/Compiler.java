@@ -567,10 +567,10 @@ public class Compiler {
 				break;
 			default:
 				if ( lexer.token == Token.ID && lexer.getStringValue().equals("Out") ) {
-					printStat();
+					statement = printStat();
 				}
 				else {
-					assignExpr();
+					statement = assignExpr();
 				}
 		}
 		if ( checkSemiColon ) {
@@ -826,7 +826,7 @@ public class Compiler {
 	}
 
 	// Printstat ::= "Out" "." ( "print:" | "println:" ) expr { "," expr }
-	private void printStat() {
+	private Out printStat() {
 		// lê "Out"
 		next();
 
@@ -851,6 +851,8 @@ public class Compiler {
 				error("Command 'write' does not accept objects");
 			}
 		}
+		
+		return write;
 	}
 	
 	// exprList := Expr { "," Expr }

@@ -15,7 +15,7 @@ public class StatementList{
 
     public void genJava(PW pw){
         for( Statement stat : this.statList ){
-        	System.out.println("Vai");
+        	//System.out.println(stat);
             stat.genJava(pw);
         }
 	}
