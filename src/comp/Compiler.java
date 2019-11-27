@@ -518,11 +518,12 @@ public class Compiler {
 	private StatementList statementList() {
 		
 		StatementList statList = new StatementList();
-		metodoAtual.addStat(statList);
 
 		while (lexer.token != Token.RIGHTCURBRACKET && lexer.token != Token.UNTIL){
 			statList.addStat(statement());
 		}
+		
+		metodoAtual.addStat(statList);
 
 		return statList;
 	}
@@ -836,12 +837,15 @@ public class Compiler {
 		check(Token.IDCOLON, "'print:' or 'println:' was expected after 'Out.'");
 		// precisa criar a classe Out
 		String printName = lexer.getStringValue();
+		//System.out.println(printName);
 		Out write = new Out(printName);
 		next();
+		
 		ExprList expr = exprList();
 		write.setExpr(expr);
 		
 		for(int i = 0; i < expr.getTamanho(); i++) {
+			//System.out.println(expr.getVetor(i));
 			if(expr.getVetor(i) == null) {
 				error("Command ' Out.print' without arguments");
 			}else if(expr.getVetor(i).getType() == Type.booleanType) {
@@ -863,6 +867,7 @@ public class Compiler {
 
 		while(lexer.token == Token.COMMA){
 			next();
+			
 			exprList.addExpr(expr());
 		}
 
@@ -1288,12 +1293,13 @@ public class Compiler {
 	
 	private LiteralInt literalInt() {
 		int value = lexer.getNumberValue();
+		//System.out.println(value);
 		next();
 		return new LiteralInt(value);
 	}
 	
 	private LiteralString literalString() {
-		String value = lexer.getStringValue();
+		String value = lexer.getLiteralStringValue();
 		next();
 		return new LiteralString(value);
 	}

@@ -13,6 +13,7 @@ public class Method {
 
 	public Method(String name){
 		this.name = name;
+		this.statList = new StatementList();
 	}
 	
 	public String getName() {
@@ -61,6 +62,6 @@ public class Method {
 		pw.add();
 		this.statList.genJava(pw);
 		pw.sub();
-        //pw.println("}");
+        pw.printlnIdent("}");
 	}
 }

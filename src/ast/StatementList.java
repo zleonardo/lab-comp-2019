@@ -7,7 +7,11 @@ package ast;
 import java.util.ArrayList;
 
 public class StatementList{
-    private ArrayList<Statement> statList = new ArrayList<Statement>();
+    private ArrayList<Statement> statList;
+    
+    public StatementList() {
+    	this.statList = new ArrayList<Statement>();
+    }
 
     public void addStat(Statement newStat){
         this.statList.add(newStat);
@@ -15,7 +19,7 @@ public class StatementList{
 
     public void genJava(PW pw){
         for( Statement stat : this.statList ){
-        	//System.out.println(stat);
+        	
             stat.genJava(pw);
         }
 	}

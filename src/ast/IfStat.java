@@ -21,9 +21,9 @@ public class IfStat extends Statement{
     }
 
     public void genJava(PW pw){
-        pw.print("if (");
+        pw.printIdent("if ");
         this.condition.genJava(pw);
-        pw.println("){");
+        pw.println("{");
         pw.add();
         this.ifPart.genJava(pw);
         pw.sub();
@@ -37,7 +37,7 @@ public class IfStat extends Statement{
             this.elsePart.genJava(pw);
             pw.sub();
             // pw.tab();
-            pw.println("}");
+            //pw.printlnIdent("}");
         }
 	}
 }

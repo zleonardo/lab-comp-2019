@@ -18,7 +18,7 @@ public class Out extends Statement{
 	}
 
 	public void genJava(PW pw){
-		pw.print("System.out.");
+		pw.printIdent("System.out.");
 		if(name.equals("print:")) {
 			pw.print("print(" + "\"");
 		}
@@ -46,7 +46,6 @@ public class Out extends Statement{
                 }
                 else if(this.exprList.getVetor(i).getType() == Type.stringType){
                 	this.exprList.getVetor(i).genJava(pw);
-                	//Expr v = this.exprList.getVetor(i);
                 	
                 }
             }
@@ -61,7 +60,7 @@ public class Out extends Statement{
                 }
             }
         }
-        pw.print(");");
+        pw.println(");");
     }
 
 }

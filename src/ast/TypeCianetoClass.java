@@ -65,11 +65,11 @@ public class TypeCianetoClass extends Type {
 		}
 		pw.println(" {");
 		
-		for( Variable list : this.fieldList ){
+		/*for( Variable list : this.fieldList ){
 			
             list.genJava(pw);
             pw.println("");
-        }
+        }*/
 		
 		//System.out.println(publicMethodList);
 		//System.out.println(privateMethodList);
