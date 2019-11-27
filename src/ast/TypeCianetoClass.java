@@ -41,8 +41,11 @@ public class TypeCianetoClass extends Type {
 
 	public void setMemberList(MemberList memberList){
 		this.fieldList = memberList.getFieldList();
-		this.publicMethodList = memberList.getPublicMethodList();
-		this.privateMethodList = memberList.getPrivateMethodList();
+		this.MethodList = memberList.getMethodList();
+	}
+	
+	public MethodList getMemberList() {
+		return this.MethodList;
 	}
 
 	public Variable returnField(String name){
@@ -56,9 +59,7 @@ public class TypeCianetoClass extends Type {
 	}
 
 	public void genJava(PW pw){
-		/*if(open) {
-			pw.println("open");
-		}*/
+		
 		pw.print("class " + getName());
 		if(this.superclass != null) {
 			pw.print("extends " + this.getSuperClass().name);
@@ -71,20 +72,10 @@ public class TypeCianetoClass extends Type {
             pw.println("");
         }*/
 		
-		//System.out.println(publicMethodList);
-		//System.out.println(privateMethodList);
-		
-		if(publicMethodList != null) {
+		if(MethodList != null) {
 			pw.add();
-			pw.print("public ");
-			publicMethodList.genJava(pw);
+			MethodList.genJava(pw);
 		}
-		
-		/*if(privateMethodList != null) {
-			pw.add();
-			pw.print("private ");
-			privateMethodList.genJava(pw);
-		}*/
 		
 		pw.println("}");
 		
@@ -93,7 +84,7 @@ public class TypeCianetoClass extends Type {
 	private String name;
 	private TypeCianetoClass superclass;
 	private ArrayList<Variable> fieldList;
-	private MethodList publicMethodList, privateMethodList;
+	private MethodList MethodList;
 	private Boolean open;
 	// m�todos p�blicos get e set para obter e iniciar as vari�veis acima,
 	// entre outros m�todos

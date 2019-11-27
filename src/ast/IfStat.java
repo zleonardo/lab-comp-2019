@@ -27,17 +27,14 @@ public class IfStat extends Statement{
         pw.add();
         this.ifPart.genJava(pw);
         pw.sub();
-        // pw.tab();
-        pw.println("}");
+        pw.printlnIdent("}");
 
         if (elsePart != null){
-            // pw.tab();
             pw.println("else {");
             pw.add();
             this.elsePart.genJava(pw);
             pw.sub();
-            // pw.tab();
-            //pw.printlnIdent("}");
+            pw.printlnIdent("}");
         }
 	}
 }

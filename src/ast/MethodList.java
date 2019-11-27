@@ -12,6 +12,14 @@ public class MethodList {
 	public void add(Method method){
 		this.methodList.add(method);
 	}
+	
+	public ArrayList<Method> getMethodList(){
+		return this.methodList;
+	}
+	
+	public Method getVetor(int i) {
+    	return this.methodList.get(i);
+    }
 
 	public void genJava(PW pw){
 		

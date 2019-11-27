@@ -243,7 +243,7 @@ public class Compiler {
 				// verifica se super classe eh open
 				else if(superClassObj.getOpen() == false)
 					error("Class " + superClassName + " is not open");
-
+				
 				classObj.setSuperClass(superClassObj);
 				
 				//Insere a classe incompleta no symboltable 
@@ -295,12 +295,7 @@ public class Compiler {
 			}
 			else if ( lexer.token == Token.FUNC ) {
 				method = methodDec();
-				
-				// nao sei como tratar casos que nao tem private nem public
-				if (qualifier != null && qualifier.contains("private"))
-					memberList.addPrivateMethod(method);
-				else 
-					memberList.addPublicMethod(method);
+				memberList.addMethod(method);
 			}
 			else {
 				break;
@@ -384,7 +379,7 @@ public class Compiler {
 			// VERIFICAR ESSE PRINT AQUI!!! ARQUIVO GER21.ci para verificar func print
 			if ( lexer.token == Token.ID || lexer.token == Token.PRINT) {
 				// unary method
-				method = new Method(lexer.getStringValue());
+				method = new Method(lexer.getStringValue(), Copiaqualifier);
 				
 				if(className.equals("Program")) {
 					if(method.getName().equals("run")) {
@@ -402,7 +397,7 @@ public class Compiler {
 				
 			}
 			else if ( lexer.token == Token.IDCOLON ) {
-				method = new Method(lexer.getStringValue());
+				method = new Method(lexer.getStringValue(), Copiaqualifier);
 				symbolTable.putMethod(lexer.getStringValue(), method);
 				next();
 				
@@ -431,21 +426,31 @@ public class Compiler {
 				flagReturn = true;
 			}
 			
-			//if(Copiaqualifier.equals("override")){
-				
-			//}
-			//Verifica override
-			/*Method metodoSuper = (Method) symbolTable.returnMethod(method.getName());
-			System.out.println(metodoAtual.getName());
-			System.out.println(metodoSuper.getName());
-
-			TypeCianetoClass checando = symbolTable.returnClass(classObj.getSuperClass().toString());
-			TypeCianetoClass superClass = classObj.getSuperClass();
-			
-			if(checando != null && ) {
-				
-			}*/
-			
+			if(classObj.getSuperClass() != null) {
+				TypeCianetoClass superClass = classObj.getSuperClass();
+				MethodList methodList = superClass.getMemberList();
+				if(methodList != null && method != null) {
+					for(int i = 0; i < methodList.getMethodList().size(); i++) {
+						if(method.getName().equals(methodList.getMethodList().get(i).getName())){
+							if(methodList.getVetor(i).getParametro().size() != method.getParametro().size()) {
+								error("Method of the subclass has a signature different from the same method of superclass ");		
+							}
+							else if(methodList.getVetor(i).getType() != method.getType()) {
+								error("Methods have different type of returns");
+							}
+							for(int j = 0; j < methodList.getMethodList().get(i).getParametro().size(); j++) {
+								if(method.getParametro().get(j).getType() != methodList.getMethodList().get(i).getParametro().get(j).getType()) {
+									error("Method of the subclass has a signature different from the same method of superclass");
+								}
+							}
+							//System.out.println(methodList.getVetor(i).getScope().contains("override"));
+							if(methodList.getVetor(i).getScope() != null && !methodList.getVetor(i).getScope().contains("override")) {
+								error("'override' expected before overridden method");
+							}
+						}
+					}
+				}
+			}
 			
 			check(Token.LEFTCURBRACKET, "'{' expected");
 			next();

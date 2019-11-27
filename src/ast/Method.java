@@ -10,14 +10,20 @@ public class Method {
 	private Type type;
 	private ArrayList<ParamDec> parametros = new ArrayList<ParamDec>();
 	private StatementList statList;
+	private String scope;
 
-	public Method(String name){
+	public Method(String name, String scope){
 		this.name = name;
 		this.statList = new StatementList();
+		this.scope = scope;
 	}
 	
 	public String getName() {
 		return this.name;
+	}
+	
+	public String getScope() {
+		return this.scope;
 	}
 	
 	public void addStat(StatementList statlist) {
@@ -43,8 +49,12 @@ public class Method {
 	public void genJava(PW pw){
 		pw.add();
 		
+		if(this.scope != null) {
+			pw.print(this.scope);
+		}
+		
 		if(this.type == null) {
-			pw.print("void ");
+			pw.print(" void ");
 		}else {
 			pw.print(" " + this.type.toString() + " ");
 		}

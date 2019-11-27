@@ -12,6 +12,10 @@ public class ParamDec {
 		this.id = id;
 		this.type = type;
 	}
+	
+	public Type getType() {
+		return this.type;
+	}
 
 	public void genJava(PW pw){
 		pw.print(this.type.toString());
