@@ -18,7 +18,15 @@ public class ParamDec {
 	}
 
 	public void genJava(PW pw){
-		pw.print(this.type.toString());
+		if(this.type == Type.intType) {
+			pw.print("Integer ");
+		}
+		else if(this.type == Type.stringType) {
+			pw.print("String ");
+		} 
+		else if(this.type == Type.booleanType) {
+			pw.print("Boolean ");
+		} 
 		pw.print(this.id);
 	}
 }

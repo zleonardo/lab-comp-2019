@@ -13,6 +13,7 @@ public class PrimaryExpr extends Expr {
 	private String firstIdName = null, secondIdName = null;
 	private Type firstIdObj = null, secondIdObj = null;
 	private ExprList exprList = new ExprList();
+	private ObjectCreation firstObj;
 
 	public void setScope(Token scope){
 		this.scope = scope;
@@ -40,6 +41,10 @@ public class PrimaryExpr extends Expr {
 
 	public String getFirstIdName(){
 		return this.firstIdName;
+	}
+	
+	public void setObject(ObjectCreation obj) {
+		this.firstObj = obj;
 	}
 
 	public void setFirstIdObj(Type firstIdObj){
@@ -75,6 +80,22 @@ public class PrimaryExpr extends Expr {
 	}
 
 	public void genJava( PW pw ) {
-		pw.printIdent("NULL");
+		
+		if(this.firstObj != null) {
+			this.firstObj.genJava(pw);
+		}
+		else if(this.firstIdName != null) {
+			pw.print(this.firstIdName);
+		}
+		
+		if(this.secondIdName != null) {
+			pw.print(".");
+			if(this.secondIdName.contains(":")) {
+				this.secondIdName = this.secondIdName.replace(":", "");
+			}
+			pw.print(this.secondIdName + "()");
+			//TEM QUE VER DE PASSAR OS PARAMETROS AQUI
+			pw.println(";");
+		}
 	}
 }

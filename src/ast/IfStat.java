@@ -21,9 +21,9 @@ public class IfStat extends Statement{
     }
 
     public void genJava(PW pw){
-        pw.printIdent("if ");
+        pw.printIdent("if (");
         this.condition.genJava(pw);
-        pw.println("{");
+        pw.println(") {");
         pw.add();
         this.ifPart.genJava(pw);
         pw.sub();

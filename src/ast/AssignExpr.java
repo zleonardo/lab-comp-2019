@@ -36,13 +36,18 @@ public class AssignExpr extends Statement{
         this.left = left;
     }
 
-
-    // REAPOVEITAR
     public void genJava(PW pw){
-        // String assign
+    	
+    	/*if(this.right != null && this.right == ReadExpr) {
+    		
+    	}*/
+    	
+    	pw.print("		");
         this.left.genJava(pw);
-        pw.print(" = ");
-        this.right.genJava(pw);
-        pw.println(";");
+        if(this.right != null) {
+        	 pw.print(" = ");
+             this.right.genJava(pw);
+             pw.println(";");
+        }
 	}
 }

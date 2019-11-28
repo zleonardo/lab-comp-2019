@@ -10,6 +10,7 @@ import lexer.Token;
 public class ReadExpr extends Expr {
 	private Token readType;
 	private Type type;
+	//private Boolean flag = true;
 
 	public ReadExpr(Token readType){
 		this.readType = readType;
@@ -26,9 +27,10 @@ public class ReadExpr extends Expr {
 	}
 
 	public void genJava( PW pw ) {
+		//pw.printlnIdent("Scanner s = new Scanner(System.in);");
 		if(type == Type.intType)
-			pw.print(" -READINT- ");
+			pw.print("s.nextInt()");
 		else if(type == Type.stringType)
-			pw.print(" -READSTRING- ");
+			pw.print("s.nextString()");
 	}
 }

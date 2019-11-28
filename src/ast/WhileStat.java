@@ -17,13 +17,13 @@ public class WhileStat extends Statement{
     }
 
     public void genJava(PW pw){
-        pw.print("while (");
+        pw.print("		while (");
         this.condition.genJava(pw);
         pw.println("){");
         pw.add();
         this.whilePart.genJava(pw);
         pw.sub();
         // pw.tab();
-        pw.println("}");
+        pw.println("		}");
 	}
 }

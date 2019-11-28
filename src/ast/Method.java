@@ -8,7 +8,7 @@ import java.util.ArrayList;
 public class Method {
 	private String name;
 	private Type type;
-	private ArrayList<ParamDec> parametros = new ArrayList<ParamDec>();
+	private ArrayList<ParamDec> parametros;
 	private StatementList statList;
 	private String scope;
 
@@ -16,6 +16,7 @@ public class Method {
 		this.name = name;
 		this.statList = new StatementList();
 		this.scope = scope;
+		this.parametros = new ArrayList<ParamDec>();
 	}
 	
 	public String getName() {
@@ -47,24 +48,41 @@ public class Method {
 	}
 
 	public void genJava(PW pw){
-		pw.add();
+		//pw.print("	");
 		
 		if(this.scope != null) {
-			pw.print(this.scope);
+			if(this.scope.contains("override")) {
+				pw.printlnIdent("@Override");
+				this.scope = this.scope.replace("override", "");
+			}
+			pw.print("	" + this.scope);
 		}
 		
 		if(this.type == null) {
 			pw.print(" void ");
-		}else {
-			pw.print(" " + this.type.toString() + " ");
+		}else if(this.type == Type.intType){
+			pw.print(" Integer ");
+		}else if(this.type == Type.stringType){
+			pw.print(" String ");
+		}else if(this.type == Type.booleanType){
+			pw.print(" Boolean ");
+		}
+		
+		if(this.name.contains(":")) {
+			this.name = this.name.replaceAll(":", "");
 		}
 		pw.print(this.name);
 		pw.print(" (");
 		
+		int i = 0;		
+		
 		for(ParamDec p : this.parametros){
-					
+			if(i != 0) {
+				pw.print(", ");
+			}
 			p.genJava(pw);
-		    pw.println(" ");
+			i++;
+		    //pw.print(" ");
 		}
 		
 		pw.println(") {");

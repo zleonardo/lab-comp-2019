@@ -17,10 +17,12 @@ public class AssertStat extends Statement{
     }
 
     public void genJava(PW pw){
-    	pw.print("assert ");
+    	pw.printIdent("assert( ");
         this.expr.genJava(pw);
-    	pw.print(" ");
-        this.string.genJava(pw);
+        if(string != null) {
+        	pw.print("): ");
+            this.string.genJava(pw);
+        }
         pw.println(";");
 	}
 }

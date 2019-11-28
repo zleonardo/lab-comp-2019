@@ -12,9 +12,7 @@ public class ReturnStat extends Statement{
     }
 
     public void genJava(PW pw){
-        pw.print("\n");
-        // pw.tab();
-    	pw.print("return ");
+    	pw.print(" return ");
         this.expr.genJava(pw);
         pw.println(";");
 	}

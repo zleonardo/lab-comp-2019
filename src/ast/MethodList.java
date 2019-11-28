@@ -22,11 +22,9 @@ public class MethodList {
     }
 
 	public void genJava(PW pw){
-		
+		pw.println(" ");
 		for(Method metodo : this.methodList){
-			
             metodo.genJava(pw);
-            pw.println(" ");
         }
 	}
 

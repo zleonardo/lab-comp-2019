@@ -26,9 +26,7 @@ public class LocalDecStat extends Statement{
 	}
 
 	public void genJava(PW pw){
-		// Type IdList [ "=" Expr ]
-		//this.type.genJava(pw);
-		pw.println(" TYPE ");
+		pw.print("		");
 		this.idList.genJava(pw);
 		if(this.expr != null){
 			pw.println(" = ");

@@ -18,8 +18,6 @@ public class Field {
 	}
 
 	public void genJava(PW pw){
-		pw.print(this.type.toString());
-		
 		idList.genJava(pw);
 		
 	}

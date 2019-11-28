@@ -17,13 +17,13 @@ public class RepeatStat extends Statement{
     }
 
     public void genJava(PW pw){
-        pw.println("do {");
+        pw.printlnIdent("do {");
         pw.add();
         this.whilePart.genJava(pw);
-        pw.print("}while(");
+        pw.printIdent("}while(");
         this.condition.genJava(pw);
         pw.sub();
         // pw.tab();
-        pw.println(")");
+        pw.println(");");
 	}
 }

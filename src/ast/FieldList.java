@@ -17,7 +17,7 @@ public class FieldList {
 		
 		for( Field list : this.fieldList ){
             list.genJava(pw);
-            pw.println("");
+            pw.println(" ");
         }
 	}
 

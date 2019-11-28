@@ -20,13 +20,13 @@ public class Out extends Statement{
 	public void genJava(PW pw){
 		pw.printIdent("System.out.");
 		if(name.equals("print:")) {
-			pw.print("print(" + "\"");
+			pw.print("print(");
 		}
 		else {
-			pw.print("println("+ "\"");
+			pw.print("println(");
 		}
 		
-		for(int i = 0; i < this.exprList.getTamanho(); i++) {
+		/*for(int i = 0; i < this.exprList.getTamanho(); i++) {
 			if(this.exprList.getVetor(i).getType() == Type.intType) {
 				pw.print("%d ");
 			}
@@ -37,7 +37,7 @@ public class Out extends Statement{
 		
 		pw.print("\"");
 		if(exprList.getTamanho() > 0)
-            pw.print(", ");
+            pw.print(", ");*/
 
         for(int i = 0; i < exprList.getTamanho(); i++){
             if(i + 1 == exprList.getTamanho()){
@@ -52,11 +52,11 @@ public class Out extends Statement{
             else{
                 if(this.exprList.getVetor(i).getType() == Type.intType){
                 	this.exprList.getVetor(i).genJava(pw);
-                    pw.print(", ");
+                    pw.print(" + ");
                 }
                 else if(this.exprList.getVetor(i).getType() == Type.stringType){
                 	this.exprList.getVetor(i).genJava(pw);
-                    pw.print(", ");
+                    pw.print(" + ");
                 }
             }
         }

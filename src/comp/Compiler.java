@@ -404,6 +404,7 @@ public class Compiler {
 				metodoAtual = method;
 
 				formalParamDec();
+				
 			}
 			else {
 				error("An identifier or identifer: was expected after 'func'");
@@ -483,12 +484,16 @@ public class Compiler {
 	private ArrayList<ParamDec> formalParamDec() {
 		ArrayList<ParamDec> paramDecList = new ArrayList<ParamDec>();
 
-		paramDecList.add(paramDec());
+		ParamDec p = paramDec();
+		paramDecList.add(p);
+		metodoAtual.addParametro(p);
 
 		while(lexer.token == Token.COMMA){
 			// lê a ","
 			next();
-			paramDecList.add(paramDec());
+			p = paramDec();
+			paramDecList.add(p);
+			metodoAtual.addParametro(p);
 		}
 
 		return paramDecList;
@@ -1064,6 +1069,9 @@ public class Compiler {
 	// joguei pra dentro do primary
 	private Expr objectCreation(PrimaryExpr primaryExpr){
 		// le new
+		
+		ObjectCreation obj = new ObjectCreation(primaryExpr.getFirstIdName());
+		
 		next();
 
 		// semantica
@@ -1073,6 +1081,7 @@ public class Compiler {
 		else{
 			primaryExpr.setFirstIdObj(classObj);
 			primaryExpr.setType(classObj);
+			primaryExpr.setObject(obj);
 		}
 
 		return primaryExpr;
