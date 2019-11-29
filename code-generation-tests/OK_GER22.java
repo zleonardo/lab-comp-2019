@@ -2,7 +2,8 @@ class Program {
  
 	public void run () {
       System.out.println("100");
-		Integer i,  n;
+		Integer i;
+Integer n;
 		i = 0;
 		n = 10;
 		Boolean b;

@@ -33,8 +33,9 @@ public class Program {
 
 	public void genJava(PW pw) {
 		
-		//pw.println("import java.io.*;");
-		//pw.println("import java.util.Scanner;");
+		pw.println("import java.io.*;");
+		pw.println("import java.util.Scanner;");
+		pw.println("");
 		
 		for(TypeCianetoClass classe : this.classList ) {
 			classe.genJava(pw);

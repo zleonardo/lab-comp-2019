@@ -1,7 +1,9 @@
 class A {
  
  void m () {
-		Integer i,  j,  k;
+		Integer i;
+Integer j;
+Integer k;
       System.out.print(7 + " ");
 		i = 1;
 		j = i + 1;

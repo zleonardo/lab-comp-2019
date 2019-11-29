@@ -1,8 +1,17 @@
+import java.io.*;
+import java.util.Scanner;
+
 class A {
  
  void m () {
-		Integer a,  b,  c,  d,  e,  f;
-		a = s.nextInt();
+		Integer a;
+Integer b;
+Integer c;
+Integer d;
+Integer e;
+Integer f;
+		Scanner s = new Scanner(System.in);
+a = s.nextInt();
 		b = s.nextInt();
 		c = s.nextInt();
 		d = s.nextInt();

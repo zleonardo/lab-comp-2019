@@ -24,7 +24,7 @@ public class IdList {
 	public void genJava(PW pw){
         if(this.idList.size() > 0){
             // printa primeiro parametro
-        	if(this.idList.get(0).getType() == Type.intType) {
+        	/*if(this.idList.get(0).getType() == Type.intType) {
     			pw.print("Integer");
     		}else if(this.idList.get(0).getType() == Type.stringType) {
     			pw.print("String");
@@ -32,16 +32,16 @@ public class IdList {
     			pw.print("Boolean");
     		}else {
     			pw.print(this.idList.get(0).getType().getName().toString());
-    		}
+    		}*/
         	//pw.print(this.idList.get(0).getType());
             this.idList.get(0).genJava(pw);
 
             // printa demais parametros separados por virgula
             for(int i = 1; i < this.idList.size(); i++){
-                pw.print(", ");
+                //pw.print(", ");
                 this.idList.get(i).genJava(pw);
             }
         }
-        pw.println(";");
+        //pw.println(";");
 	}
 }
