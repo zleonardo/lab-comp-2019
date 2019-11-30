@@ -1,15 +1,20 @@
 import java.io.*;
 import java.util.Scanner;
 
+public class OK_GER05 {
+	public static void main(String [] args) {
+		new Program().run();
+	}
+}
 class A {
  
  void m () {
-		Integer a;
-Integer b;
-Integer c;
-Integer d;
-Integer e;
-Integer f;
+		int a;
+int b;
+int c;
+int d;
+int e;
+int f;
 		Scanner s = new Scanner(System.in);
 a = s.nextInt();
 		b = s.nextInt();

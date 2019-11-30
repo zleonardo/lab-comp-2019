@@ -1,11 +1,22 @@
+import java.io.*;
+import java.util.Scanner;
+
+public class OK_GER21 {
+	public static void main(String [] args) {
+		new Program().run();
+	}
+}
 class A {
-Integer n;
+int n;
  
- void set (Integer n) {
-		n = n;
+ void set (int n) {
+		Scanner s = new Scanner(System.in);
+this.n();
+ = n;
    }
- Integer get () {
- return n;
+ int get () {
+ return this.n();
+;
    }
 }
 

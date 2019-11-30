@@ -46,6 +46,7 @@ public class AssignExpr extends Statement{
         		if(flag) {
         			//System.out.println(flag);
         			pw.println("Scanner s = new Scanner(System.in);");
+        			//pw.println("BufferedReader s = new BufferedReader(new InputStreamReader(System.in));");
         			flag = false;
         		}
         	}

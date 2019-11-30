@@ -1,18 +1,29 @@
+import java.io.*;
+import java.util.Scanner;
+
+public class OK_GER13 {
+	public static void main(String [] args) {
+		new Program().run();
+	}
+}
 class A {
- n
+int n;
  
 	private void p1 () {
       System.out.print("999 ");
    }
- void set (Integer pn) {
+ void set (int pn) {
       System.out.print(1 + " ");
-		n = pn;
+		Scanner s = new Scanner(System.in);
+this.n();
+ = pn;
    }
 	private void p2 () {
       System.out.print("888 ");
    }
- Integer get () {
- return n;
+ int get () {
+ return this.n();
+;
    }
  void print () {
       System.out.print("A ");

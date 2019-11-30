@@ -27,15 +27,18 @@ public class Program {
 	public void setMainJavaClassName(String mainJavaClassName) {
 		this.mainJavaClassName = mainJavaClassName;
 	}
-	
-	/*public void genJava(PW pw) {
-	}*/
 
 	public void genJava(PW pw) {
 		
 		pw.println("import java.io.*;");
 		pw.println("import java.util.Scanner;");
 		pw.println("");
+		
+		pw.println("public class " + mainJavaClassName + " {");
+		pw.printlnIdent("	public static void main(String [] args) {");
+		pw.printlnIdent("		new Program().run();");
+		pw.printlnIdent("	}");
+		pw.println("}");
 		
 		for(TypeCianetoClass classe : this.classList ) {
 			classe.genJava(pw);

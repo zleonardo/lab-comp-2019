@@ -1,47 +1,67 @@
+import java.io.*;
+import java.util.Scanner;
+
+public class OK_GER14 {
+	public static void main(String [] args) {
+		new Program().run();
+	}
+}
 class A {
- k
+int k;
  
- Integer get_A () {
- return k;
+ int get_A () {
+ return this.k();
+;
    }
  void init () {
-		k = 1;
+		Scanner s = new Scanner(System.in);
+this.k();
+ = 1;
    }
 }
 
 class B extends A {
- k
+int k;
  
- Integer get_B () {
- return k;
+ int get_B () {
+ return this.k();
+;
       }
       @Override
-	 void init () {
-		init		k = 2;
+ void init () {
+		super.init();
+		this.k();
+ = 2;
       }
 }
 
 class C extends B {
- k
+int k;
  
- Integer get_C () {
- return k;
+ int get_C () {
+ return this.k();
+;
          }
          @Override
-	 void init () {
-		init		k = 3;
+ void init () {
+		super.init();
+		this.k();
+ = 3;
          }
 }
 
 class D extends C {
- k
+int k;
  
- Integer get_D () {
- return k;
+ int get_D () {
+ return this.k();
+;
             }
             @Override
-	 void init () {
-		init		k = 4;
+ void init () {
+		super.init();
+		this.k();
+ = 4;
             }
 }
 

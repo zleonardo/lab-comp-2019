@@ -44,23 +44,22 @@ public class Compiler {
 				while ( lexer.token == Token.ANNOT ) {
 					metaobjectAnnotation(metaobjectCallList);
 				}
-
+				
 				CianetoClassList.add(classDec());
+				
 			}
-			/*catch( CompilerError e) {
-				// if there was an exception, there is a compilation error
-				thereWasAnError = true;
-				while ( lexer.token != Token.CLASS && lexer.token != Token.EOF ) {
-					try {
-						next();
-					}
-					catch ( RuntimeException ee ) {
-						e.printStackTrace();
-						return program;
-					}
-				}
-			}*/
-
+			/*catch ( Throwable e ) {
+	            e.printStackTrace();
+	            thereWasAnError = true;
+	            // adicione as linhas abaixo
+	            try {
+	                error("Exception '" + e.getClass().getName() + "' was thrown and not caught. "
+	                        + "Its message is '" + e.getMessage() + "'");
+	            }
+	            catch( CompilerError ee) {
+	            }
+	            return null; // add this line
+	        }*/
 			catch( CompilerError e) {
 		      // if there was an exception, there is a compilation error
 		      thereWasAnError = true;

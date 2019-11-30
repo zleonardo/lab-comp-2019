@@ -1,10 +1,19 @@
+import java.io.*;
+import java.util.Scanner;
+
+public class OK_GER04 {
+	public static void main(String [] args) {
+		new Program().run();
+	}
+}
 class A {
  
  void m () {
-		Integer i;
-		Boolean b;
+		int i;
+		boolean b;
       System.out.print(6 + " ");
-		i = 1;
+		Scanner s = new Scanner(System.in);
+i = 1;
 		while (i <= 5){
          System.out.print(i + " ");
 		i = i + 1;

@@ -1,16 +1,28 @@
+import java.io.*;
+import java.util.Scanner;
+
+public class OK_GER16 {
+	public static void main(String [] args) {
+		new Program().run();
+	}
+}
 class A {
-Integer k;
+int k;
  
-	public Integer get_A () {
- return k;
+	public int get_A () {
+ return this.k();
+;
    }
-	public void set (Integer k) {
-		k = k;
+	public void set (int k) {
+		Scanner s = new Scanner(System.in);
+this.k();
+ = k;
    }
 	public void print () {
       System.out.print(" ");
    }
 	public void init () {
-		set:   }
+		this.set(0);
+   }
 }
 

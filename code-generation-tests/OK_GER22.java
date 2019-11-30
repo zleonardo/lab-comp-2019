@@ -1,20 +1,29 @@
+import java.io.*;
+import java.util.Scanner;
+
+public class OK_GER22 {
+	public static void main(String [] args) {
+		new Program().run();
+	}
+}
 class Program {
  
 	public void run () {
       System.out.println("100");
-		Integer i;
-Integer n;
-		i = 0;
+		int i;
+int n;
+		Scanner s = new Scanner(System.in);
+i = 0;
 		n = 10;
-		Boolean b;
+		boolean b;
 		b = false;
       do {
 		n = n + 1;
          }while(true);
       assert( n == 11): "'repeat-until' statement with 'true' as expression'";
-		Integer j;
+		int j;
 		j = 0;
-		Integer sum;
+		int sum;
 		sum = 0;
 		n = 10;
       do {

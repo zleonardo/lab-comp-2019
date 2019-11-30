@@ -1,9 +1,17 @@
+import java.io.*;
+import java.util.Scanner;
+
+public class OK_GER12 {
+	public static void main(String [] args) {
+		new Program().run();
+	}
+}
 class A {
  
  void m1 () {
       System.out.print(1 + " ");
    }
- void m2 (Integer n) {
+ void m2 (int n) {
       System.out.print(n + " ");
    }
 }
@@ -11,19 +19,22 @@ class A {
 class B extends A {
  
       @Override
-	 void m2 (Integer n) {
+ void m2 (int n) {
          System.out.print(n + " ");
-		m2:      }
+		super.m2(n + 1);
+      }
 }
 
 class C extends B {
  
          @Override
-	 void m1 () {
-		m1            System.out.print(2 + " ");
+ void m1 () {
+		super.m1();
+            System.out.print(2 + " ");
          }
  void m3 () {
-		m1            System.out.print(1 + " ");
+		this.m1();
+            System.out.print(1 + " ");
             System.out.print(2 + " ");
          }
 }
@@ -36,7 +47,7 @@ class Program {
 		C c;
                System.out.println("1 2 1 2 1 2 1 2");
 		b = new B();
-		b.m2();
+		b.m2(1);
 		c = new C();
 		c.m1();
 		c.m3();

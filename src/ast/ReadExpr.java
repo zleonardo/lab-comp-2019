@@ -27,8 +27,8 @@ public class ReadExpr extends Expr {
 	}
 
 	public void genJava( PW pw ) {
-		//pw.printlnIdent("Scanner s = new Scanner(System.in);");
 		if(type == Type.intType)
+			//pw.print("Integer.parseInt(s.nextLine())");
 			pw.print("s.nextInt()");
 		else if(type == Type.stringType)
 			pw.print("s.nextString()");

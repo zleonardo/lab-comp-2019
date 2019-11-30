@@ -5,6 +5,7 @@
 
 package ast;
 
+import comp.SymbolTable;
 import lexer.Token;
 
 public class PrimaryExpr extends Expr {
@@ -14,6 +15,8 @@ public class PrimaryExpr extends Expr {
 	private Type firstIdObj = null, secondIdObj = null;
 	private ExprList exprList = new ExprList();
 	private ObjectCreation firstObj;
+	private boolean flag = false;
+	private int j = 0;
 
 	public void setScope(Token scope){
 		this.scope = scope;
@@ -80,12 +83,35 @@ public class PrimaryExpr extends Expr {
 	}
 
 	public void genJava( PW pw ) {
-		
+				
 		if(this.firstObj != null) {
 			this.firstObj.genJava(pw);
 		}
 		else if(this.firstIdName != null) {
-			pw.print(this.firstIdName);
+			if(this.scope != null) {
+				if(this.scope.toString().equals("self")) {
+					pw.print("this.");
+				}else {
+					pw.print(this.scope + ".");
+				}
+				if(this.firstIdName.contains(":")) {
+					this.firstIdName = this.firstIdName.replaceAll(":", "");
+					flag = true;
+				}
+				if(flag) {
+					pw.print(this.firstIdName + "(");
+					for(int i = 0; i < this.exprList.getTamanho(); i++) {
+						this.exprList.getVetor(i).genJava(pw);
+					}
+					pw.println(");");
+				}else{
+					//ARRUMAR AQUI!!!
+					pw.println(this.firstIdName + "();");
+				}
+			}else {
+				pw.print(this.firstIdName);
+			}
+			//pw.println(";");
 		}
 		
 		if(this.secondIdName != null) {
@@ -93,9 +119,15 @@ public class PrimaryExpr extends Expr {
 			if(this.secondIdName.contains(":")) {
 				this.secondIdName = this.secondIdName.replace(":", "");
 			}
-			pw.print(this.secondIdName + "()");
-			//TEM QUE VER DE PASSAR OS PARAMETROS AQUI
-			pw.println(";");
+			pw.print(this.secondIdName + "(");
+			for(int i = 0; i < this.exprList.getTamanho(); i++) {
+				this.exprList.getVetor(i).genJava(pw);
+				if(i != 0 && ((i + 1) < this.exprList.getTamanho())) {
+					pw.print(" ,");
+				}
+			}
+			pw.println(");");
 		}
+		
 	}
 }

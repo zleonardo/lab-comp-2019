@@ -24,11 +24,11 @@ public class Variable extends Type{
 
     public void genJava(PW pw){
     	if(type == Type.intType)
-			pw.print("Integer");
+			pw.print("int");
 		else if(type == Type.stringType)
 			pw.print("String");
 		else if(type == Type.booleanType)
-			pw.print("Boolean");
+			pw.print("boolean");
 		else {
 			pw.print(type.getName().toString());
 		}

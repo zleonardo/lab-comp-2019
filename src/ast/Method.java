@@ -48,24 +48,26 @@ public class Method {
 	}
 
 	public void genJava(PW pw){
-		//pw.print("	");
 		
 		if(this.scope != null) {
 			if(this.scope.contains("override")) {
 				pw.printlnIdent("@Override");
 				this.scope = this.scope.replace("override", "");
+			}else {
+				pw.print("	" + this.scope);
 			}
-			pw.print("	" + this.scope);
+		}else {
+			//pw.print(" public");
 		}
 		
 		if(this.type == null) {
 			pw.print(" void ");
 		}else if(this.type == Type.intType){
-			pw.print(" Integer ");
+			pw.print(" int ");
 		}else if(this.type == Type.stringType){
 			pw.print(" String ");
 		}else if(this.type == Type.booleanType){
-			pw.print(" Boolean ");
+			pw.print(" boolean ");
 		}
 		
 		if(this.name.contains(":")) {
