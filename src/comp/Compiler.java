@@ -622,12 +622,12 @@ public class Compiler {
 			assignExpr.setRightExpr(expr);
 			
 			// atribuindo nulo
-			if(expr.getType().equals(Type.nullType)){
-				varObj.assignNull();
-				System.out.print("\n" + varObj.notAssignedWithNull());
-				symbolTable.removeVariable(varName);
-				symbolTable.putVariable(varName, varObj);
-			}
+			// if(expr.getType().equals(Type.nullType)){
+			// 	varObj.assignNull();
+			// 	System.out.print("\n" + varObj.notAssignedWithNull());
+			// 	symbolTable.removeVariable(varName);
+			// 	symbolTable.putVariable(varName, varObj);
+			// }
 			// desatribuindo nulo
 			// else{
 			// 	varObj.unassignNull();
@@ -646,35 +646,23 @@ public class Compiler {
 					error("'" + rightType.getName() + " cannot be assigned to 'nil'");
 				// class = x
 				else{
-					TypeCianetoClass leftClassObj = symbolTable.returnClass(leftType.getName());
 					// class = basic type
 					if(rightType == Type.booleanType || rightType == Type.stringType || rightType == Type.intType)
 						error("Type error: Cannot assign '" + rightType.getName() + " to '" + leftType.getName() + "'");
-
+					// class = nil
+					// else if (leftType == Type.nullType) TERMINAR
+					// class = subclass
+					// else{
+					else if (leftType != Type.nullType){
+						TypeCianetoClass rightClassObj = symbolTable.returnClass(rightType.getName());
+						// System.out.print(rightClassObj.getSuperClass().getName() + " " + leftType.getName()+ "\n ");
+						if(rightClassObj.getSuperClass() == null)
+							error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+						else if(rightClassObj.getSuperClass().getName() != leftType.getName())
+							error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+					}
 				}
 			}
-		
-			//TERMINAR!
-			// if(assignExpr.getLeft().getType() == Type.booleanType) {
-			// 	if(assignExpr.getRight().getType() == Type.intType) {
-			// 	}
-			// }else if(assignExpr.getLeft().getType() == Type.intType) {
-			// 	if(assignExpr.getRight().getType() == Type.booleanType) {
-			// 		error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
-			// 	}else if(assignExpr.getRight().getType() == Type.nullType) {
-			// 		error("Type error: 'nil' cannot be assigned to a variable of a basic type");
-			// 	}else if(assignExpr.getRight().getType() != Type.intType) {
-			// 		error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
-			// 	}
-			// }else if(assignExpr.getLeft().getType() == Type.stringType)
-			// TERMINAR!
-				
-			//else if(!left.getType().equals(right.getType())) {
-				// Classes
-				
-			//}
-				//error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
-			//}
 		}
 		
 		return assignExpr;

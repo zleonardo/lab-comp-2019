@@ -80,7 +80,7 @@ public class TypeCianetoClass extends Type {
 		
 	}
 
-	private TypeCianetoClass superclass;
+	private TypeCianetoClass superclass = null;
 	private ArrayList<Variable> fieldList;
 	private MethodList MethodList;
 	private Boolean open;
