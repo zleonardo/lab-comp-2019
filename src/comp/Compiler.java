@@ -34,7 +34,7 @@ public class Compiler {
 	private Program program(ArrayList<CompilationError> compilationErrorList) {
 		ArrayList<MetaobjectAnnotation> metaobjectCallList = new ArrayList<>();
 		ArrayList<TypeCianetoClass> CianetoClassList = new ArrayList<>();
-		Program program;
+		Program program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);;
 		boolean thereWasAnError = false;
 
 		while ( lexer.token == Token.CLASS ||
@@ -48,7 +48,7 @@ public class Compiler {
 				CianetoClassList.add(classDec());
 				
 			}
-			/*catch ( Throwable e ) {
+			catch ( Throwable e ) {
 	            e.printStackTrace();
 	            thereWasAnError = true;
 	            // adicione as linhas abaixo
@@ -58,9 +58,9 @@ public class Compiler {
 	            }
 	            catch( CompilerError ee) {
 	            }
-	            return null; // add this line
-	        }*/
-			catch( CompilerError e) {
+	            return program; // add this line
+	        }
+			/*catch( CompilerError e) {
 		      // if there was an exception, there is a compilation error
 		      thereWasAnError = true;
 			}
@@ -68,7 +68,7 @@ public class Compiler {
 			catch ( RuntimeException e ) {
 				e.printStackTrace();
 				thereWasAnError = true;
-			}
+			}*/
 
 		}
 		
@@ -90,7 +90,7 @@ public class Compiler {
 			catch( CompilerError e) {
 			}
 		}
-		program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);
+		//program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);
 		return program;
 	}
 
@@ -389,6 +389,7 @@ public class Compiler {
 				}
 				
 				symbolTable.putMethod(lexer.getStringValue(), method);
+				symbolTable.putMethodGlobal(lexer.getStringValue(), method);
 				next();
 				
 				
@@ -443,7 +444,6 @@ public class Compiler {
 									error("Method of the subclass has a signature different from the same method of superclass");
 								}
 							}
-							//System.out.println(methodList.getVetor(i).getScope().contains("override"));
 							if(methodList.getVetor(i).getScope() != null && !methodList.getVetor(i).getScope().contains("override")) {
 								error("'override' expected before overridden method");
 							}
@@ -961,8 +961,9 @@ public class Compiler {
 
 			CompositeExpr ce = new CompositeExpr(left, oper, right);
 			
-			if(left.getType() != right.getType())
+			if(left.getType() != right.getType()) {
 				error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + right.getType().getName() + "' value");
+			}	
 			else
 				ce.setType(left.getType());
 

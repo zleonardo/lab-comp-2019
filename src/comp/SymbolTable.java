@@ -16,12 +16,14 @@ public class SymbolTable {
     private Hashtable<String, Object> methodsTable;
     private Hashtable<String, Variable> attributesTable;
     private Hashtable<String, Variable> variablesTable;
+    private Hashtable<String, Object> metodoGlobal;
 
     public SymbolTable() {
         this.classesTable = new Hashtable<String, TypeCianetoClass>();
         this.methodsTable = new Hashtable<String, Object>();
         this.attributesTable = new Hashtable<String, Variable>();
         this.variablesTable = new Hashtable<String, Variable>();
+        this.metodoGlobal = new Hashtable<String, Object>();
     }
 
     // Limpa tabela de variáveis locais
@@ -64,6 +66,14 @@ public class SymbolTable {
 
     public void putMethod(String chave, Object valor) {
         this.methodsTable.put(chave, valor);
+    }
+    
+    public void putMethodGlobal(String chave, Object valor) {
+        this.metodoGlobal.put(chave, valor);
+    }
+    
+    public Object returnMethodGlobal(String chave) {
+        return this.metodoGlobal.get(chave);
     }
     
     public void putAttribute(String chave, Variable valor) {
