@@ -16,11 +16,11 @@ public class TypeCianetoClass extends Type {
 
 	// @Override
 	// public String getCname() {
-	//    return getName();
+	//    return super.getName();
 	// }
 	
 	public String getType() {
-		return getName();
+		return super.getName();
 	}
 
 	public void setOpen(Boolean flag) {
@@ -60,7 +60,7 @@ public class TypeCianetoClass extends Type {
 
 	public void genJava(PW pw){
 		
-		pw.print("class " + getName());
+		pw.print("class " + super.getName());
 		if(this.superclass != null) {
 			pw.print(" extends " + this.getSuperClass().getName());
 		}
@@ -80,7 +80,6 @@ public class TypeCianetoClass extends Type {
 		
 	}
 
-	private String name;
 	private TypeCianetoClass superclass;
 	private ArrayList<Variable> fieldList;
 	private MethodList MethodList;

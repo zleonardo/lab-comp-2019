@@ -11,7 +11,7 @@ public class TypeBoolean extends Type {
 
    @Override
    public String getName() {
-      return "bool";
+      return "boolean";
    }
 
    public void genJava(PW pw){

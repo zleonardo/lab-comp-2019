@@ -11,7 +11,7 @@ public class TypeString extends Type {
         super("String");
     }
     
-   public String getCname() {
+   public String getName() {
       return "String";
    }
 

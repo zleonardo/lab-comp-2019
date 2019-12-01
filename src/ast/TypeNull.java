@@ -13,7 +13,7 @@ public class TypeNull extends Type {
 
 	@Override
 	public String getName() {
-		return "NULL";
+		return "NullType";
 	}
 
     public void genJava(PW pw){

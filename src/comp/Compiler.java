@@ -634,23 +634,42 @@ public class Compiler {
 			// 	symbolTable.removeVariable(varName);
 			// 	symbolTable.putVariable(varName, varObj);
 			// }
+
+			Type leftType = assignExpr.getLeft().getType();
+			Type rightType = assignExpr.getRight().getType();
+			if(leftType != rightType){
+				// basic type = x
+				if(leftType == Type.booleanType || leftType == Type.stringType || leftType == Type.intType)
+					error("'" + rightType.getName() + "' cannot be assigned to '" + leftType.getName() + "'");
+				// nil = x
+				else if (leftType == Type.nullType)
+					error("'" + rightType.getName() + " cannot be assigned to 'nil'");
+				// class = x
+				else{
+					TypeCianetoClass leftClassObj = symbolTable.returnClass(leftType.getName());
+					// class = basic type
+					if(rightType == Type.booleanType || rightType == Type.stringType || rightType == Type.intType)
+						error("Type error: Cannot assign '" + rightType.getName() + " to '" + leftType.getName() + "'");
+
+				}
+			}
 		
 			//TERMINAR!
-			if(assignExpr.getLeft().getType() == Type.booleanType) {
-				if(assignExpr.getRight().getType() == Type.intType) {
-					error("'int' cannot be assigned to 'boolean'");
-				}
-			}else if(assignExpr.getLeft().getType() == Type.intType) {
-				if(assignExpr.getRight().getType() == Type.booleanType) {
-					error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
-				}else if(assignExpr.getRight().getType() == Type.nullType) {
-					error("Type error: 'nil' cannot be assigned to a variable of a basic type");
-				}else if(assignExpr.getRight().getType() != Type.intType) {
-					error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
-				}
-			}else if(assignExpr.getLeft().getType() == Type.stringType) {
+			// if(assignExpr.getLeft().getType() == Type.booleanType) {
+			// 	if(assignExpr.getRight().getType() == Type.intType) {
+			// 	}
+			// }else if(assignExpr.getLeft().getType() == Type.intType) {
+			// 	if(assignExpr.getRight().getType() == Type.booleanType) {
+			// 		error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+			// 	}else if(assignExpr.getRight().getType() == Type.nullType) {
+			// 		error("Type error: 'nil' cannot be assigned to a variable of a basic type");
+			// 	}else if(assignExpr.getRight().getType() != Type.intType) {
+			// 		error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+			// 	}
+			// }else if(assignExpr.getLeft().getType() == Type.stringType)
+			// TERMINAR!
 				
-			}//else if(!left.getType().equals(right.getType())) {
+			//else if(!left.getType().equals(right.getType())) {
 				// Classes
 				
 			//}
@@ -933,15 +952,17 @@ public class Compiler {
 					}
 				}*/
 				
-				if(relation == Token.EQ || relation == Token.NEQ){
-					System.out.print("\n" + left.getType().getName() + " " + right.getType().getName() + "\n");
-					if(left.getType() != right.getType()){
-						System.out.print("\nrelation  " + left.notAssignedWithNull() + " " + right.notAssignedWithNull() + "\n");
-						if(left.notAssignedWithNull() && right.notAssignedWithNull()){
-							error("Incompatible types cannot be compared with '" + relation.toString() + "' because the result will always be 'false'");
-						}
-					}
-				}
+				// TERMINAR 
+				// sem a parte q trata os casos de 'nil' piora o relatorio
+				// if(relation == Token.EQ || relation == Token.NEQ){
+				// 	// System.out.print("\n" + left.getType().getName() + " " + right.getType().getName() + "\n");
+				// 	if(left.getType() != right.getType()){
+				// 		// System.out.print("\nrelation  " + left.notAssignedWithNull() + " " + right.notAssignedWithNull() + "\n");
+				// 		// if(left.notAssignedWithNull() && right.notAssignedWithNull()){
+				// 			error("Incompatible types cannot be compared with '" + relation.toString() + "' because the result will always be 'false'");
+				// 		// }
+				// 	}
+				// }
 
 				CompositeExpr ce = new CompositeExpr(left,  relation, right);
 				ce.setType(Type.booleanType);
