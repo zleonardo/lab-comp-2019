@@ -14,16 +14,13 @@ int n;
    }
  void set (int pn) {
       System.out.print(1 + " ");
-		Scanner s = new Scanner(System.in);
-this.n();
- = pn;
+		this.n = pn;
    }
 	private void p2 () {
       System.out.print("888 ");
    }
  int get () {
- return this.n();
-;
+ return this.n;
    }
  void print () {
       System.out.print("A ");

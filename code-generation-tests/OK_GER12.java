@@ -29,12 +29,10 @@ class C extends B {
  
          @Override
  void m1 () {
-		super.m1();
-            System.out.print(2 + " ");
+		super.m1            System.out.print(2 + " ");
          }
  void m3 () {
-		this.m1();
-            System.out.print(1 + " ");
+		this.m1            System.out.print(1 + " ");
             System.out.print(2 + " ");
          }
 }

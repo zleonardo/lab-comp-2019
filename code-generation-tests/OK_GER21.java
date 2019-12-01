@@ -10,13 +10,10 @@ class A {
 int n;
  
  void set (int n) {
-		Scanner s = new Scanner(System.in);
-this.n();
- = n;
+		this.n = n;
    }
  int get () {
- return this.n();
-;
+ return this.n;
    }
 }
 

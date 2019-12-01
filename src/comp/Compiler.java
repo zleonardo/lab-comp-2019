@@ -34,7 +34,7 @@ public class Compiler {
 	private Program program(ArrayList<CompilationError> compilationErrorList) {
 		ArrayList<MetaobjectAnnotation> metaobjectCallList = new ArrayList<>();
 		ArrayList<TypeCianetoClass> CianetoClassList = new ArrayList<>();
-		Program program;
+		Program program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);;
 		boolean thereWasAnError = false;
 
 		while ( lexer.token == Token.CLASS ||
@@ -48,7 +48,7 @@ public class Compiler {
 				CianetoClassList.add(classDec());
 				
 			}
-			/*catch ( Throwable e ) {
+			catch ( Throwable e ) {
 	            e.printStackTrace();
 	            thereWasAnError = true;
 	            // adicione as linhas abaixo
@@ -58,9 +58,9 @@ public class Compiler {
 	            }
 	            catch( CompilerError ee) {
 	            }
-	            return null; // add this line
-	        }*/
-			catch( CompilerError e) {
+	            return program; // add this line
+	        }
+			/*catch( CompilerError e) {
 		      // if there was an exception, there is a compilation error
 		      thereWasAnError = true;
 			}
@@ -68,7 +68,7 @@ public class Compiler {
 			catch ( RuntimeException e ) {
 				e.printStackTrace();
 				thereWasAnError = true;
-			}
+			}*/
 
 		}
 		
@@ -90,7 +90,7 @@ public class Compiler {
 			catch( CompilerError e) {
 			}
 		}
-		program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);
+		//program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);
 		return program;
 	}
 
@@ -389,6 +389,7 @@ public class Compiler {
 				}
 				
 				symbolTable.putMethod(lexer.getStringValue(), method);
+				symbolTable.putMethodGlobal(lexer.getStringValue(), method);
 				next();
 				
 				
@@ -443,8 +444,10 @@ public class Compiler {
 									error("Method of the subclass has a signature different from the same method of superclass");
 								}
 							}
-							//System.out.println(methodList.getVetor(i).getScope().contains("override"));
-							if(methodList.getVetor(i).getScope() != null && !methodList.getVetor(i).getScope().contains("override")) {
+							if(methodList.getVetor(i).getScope() != null && !method.getScope().contains("override") && !method.getScope().contains("private")) {
+								//System.out.println(methodList.getVetor(i).getScope().contains("override"));
+								//System.out.println(methodList.getVetor(i).getScope());
+								//System.out.println(method.getScope());
 								error("'override' expected before overridden method");
 							}
 						}
@@ -594,14 +597,17 @@ public class Compiler {
 	// assignExpr := Expr [ "=" Expr]
 	private AssignExpr assignExpr() {
 		AssignExpr assignExpr = new AssignExpr();
+		String varName = lexer.getStringValue();
+		Variable varObj = null;
 		
 		if (lexer.token == Token.ID || lexer.token == Token.SELF || lexer.token == Token.SUPER){
-			if(symbolTable.returnAttribute((lexer.getStringValue())) != null && lexer.token != Token.SELF){
+			if(symbolTable.returnAttribute((varName)) != null && lexer.token != Token.SELF){
 				error("");
 			}
-			if(symbolTable.returnVariable(lexer.getStringValue()) == null) {
+			varObj = symbolTable.returnVariable(varName);
+			if(varObj == null) {
 				if(lexer.token != Token.SELF && lexer.token != Token.SUPER) {
-					error("Variable '" + lexer.getStringValue() + "' was not declared");
+					error("Variable '" + varName + "' was not declared");
 				}
 			}
 			
@@ -612,8 +618,23 @@ public class Compiler {
 
 		if(lexer.token == Token.ASSIGN){
 			next();
-			assignExpr.setRightExpr(expr());
+			Expr expr = expr();
+			assignExpr.setRightExpr(expr);
 			
+			// atribuindo nulo
+			if(expr.getType().equals(Type.nullType)){
+				varObj.assignNull();
+				System.out.print("\n" + varObj.notAssignedWithNull());
+				symbolTable.removeVariable(varName);
+				symbolTable.putVariable(varName, varObj);
+			}
+			// desatribuindo nulo
+			// else{
+			// 	varObj.unassignNull();
+			// 	symbolTable.removeVariable(varName);
+			// 	symbolTable.putVariable(varName, varObj);
+			// }
+		
 			//TERMINAR!
 			if(assignExpr.getLeft().getType() == Type.booleanType) {
 				if(assignExpr.getRight().getType() == Type.intType) {
@@ -912,6 +933,16 @@ public class Compiler {
 					}
 				}*/
 				
+				if(relation == Token.EQ || relation == Token.NEQ){
+					System.out.print("\n" + left.getType().getName() + " " + right.getType().getName() + "\n");
+					if(left.getType() != right.getType()){
+						System.out.print("\nrelation  " + left.notAssignedWithNull() + " " + right.notAssignedWithNull() + "\n");
+						if(left.notAssignedWithNull() && right.notAssignedWithNull()){
+							error("Incompatible types cannot be compared with '" + relation.toString() + "' because the result will always be 'false'");
+						}
+					}
+				}
+
 				CompositeExpr ce = new CompositeExpr(left,  relation, right);
 				ce.setType(Type.booleanType);
 				left = ce;
@@ -961,8 +992,9 @@ public class Compiler {
 
 			CompositeExpr ce = new CompositeExpr(left, oper, right);
 			
-			if(left.getType() != right.getType())
+			if(left.getType() != right.getType()) {
 				error("operator '" + oper.toString() + "' of '" + left.getType().getName() + "' expects an '" + right.getType().getName() + "' value");
+			}	
 			else
 				ce.setType(left.getType());
 
@@ -1192,7 +1224,7 @@ public class Compiler {
 					}
 				}
 				else{
-					primaryExpr.setFirstIdObj(variableObj);
+					// primaryExpr.setFirstIdObj(variableObj);
 					primaryExpr.setType(variableObj.getType());
 				}
 			}
@@ -1213,10 +1245,46 @@ public class Compiler {
 					}
 				}
 				else{
-					primaryExpr.setSecondIdObj(variableObj);
+					// primaryExpr.setSecondIdObj(variableObj);
 					primaryExpr.setType(variableObj.getType());
 				}
 			}
+			// id.idcolon
+			// else if(primaryExpr.getFirstIdName() != null && primaryExpr.getSecondIdName() != null && primaryExpr.getExprList() != null){
+				// busca metodo
+			// 	classObj = symbolTable.returnClass(primaryExpr.getFirstIdName());
+			// 	if(classObj != null){
+			// 			methodObj = classObj.returnMethod(primaryExpr.getSecondIdName());
+			// 		if(methodObj == null){
+			// 			superClassObj = classObj.getSuperClass();
+			// 			if(superClassObj != null){
+			// 				methodObj = superClassObj.returnMethod(primaryExpr.getSecondIdName());
+			// 			}
+			// 		}
+			// 	}
+			// 	if(methodObj == null){
+			// 		error("Method ' " + primaryExpr.getSecondIdName() + "' was not found in class '" + primaryExpr.getFirstIdName() + "' or its superclasse");
+			// 	}
+			// }
+		// if(primaryExpr.getScope() == Token.SELF) SEMPRE METODOS
+		// if(primaryExpr.getScope() == Token.SUPER)
+		// 	if(primaryExpr.getSecondIdName() == null)
+		// 		if(primaryExpr.getFirstIdName() == null)
+		// 			// self
+		// 			primaryExpr.setType(classObj);
+		// 		// self.id
+		// 		else{
+		// 			variableObj = symbolTable.returnAttribute(primaryExpr.getSecondIdName());
+		// 			methodObj = symbolTable.returnMethod(primaryExpr.getSecondIdName());
+		// 			if(variableObj != null) {
+		// 				primaryExpr.setSecondIdObj(variableObj);
+		// 				primaryExpr.setType(variableObj.getType());
+		// 			}
+		// 			else if(methodObj != null){
+		// 				primaryExpr.setType(methodObj.getType());
+		// 			}
+		// 			else
+		// 				error("Variable or method " + primaryExpr.getSecondIdName() + " not declared");;
 		}
 
 		return primaryExpr;

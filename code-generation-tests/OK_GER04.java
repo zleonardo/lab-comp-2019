@@ -12,8 +12,7 @@ class A {
 		int i;
 		boolean b;
       System.out.print(6 + " ");
-		Scanner s = new Scanner(System.in);
-i = 1;
+		i = 1;
 		while (i <= 5){
          System.out.print(i + " ");
 		i = i + 1;

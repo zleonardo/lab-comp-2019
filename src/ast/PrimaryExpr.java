@@ -16,7 +16,7 @@ public class PrimaryExpr extends Expr {
 	private ExprList exprList = new ExprList();
 	private ObjectCreation firstObj;
 	private boolean flag = false;
-	private int j = 0;
+	private SymbolTable symbol = new SymbolTable();
 
 	public void setScope(Token scope){
 		this.scope = scope;
@@ -106,7 +106,15 @@ public class PrimaryExpr extends Expr {
 					pw.println(");");
 				}else{
 					//ARRUMAR AQUI!!!
-					pw.println(this.firstIdName + "();");
+					
+					//System.out.println(symbol.returnMethodGlobal(this.firstIdName));
+					
+					if(symbol.returnMethodGlobal(this.firstIdName) != null) {
+						pw.println(this.firstIdName + "();");
+					}else {
+						pw.print(this.firstIdName);
+					}
+					
 				}
 			}else {
 				pw.print(this.firstIdName);

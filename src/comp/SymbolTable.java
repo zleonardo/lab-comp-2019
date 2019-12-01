@@ -9,19 +9,22 @@ import java.util.Hashtable;
 
 import ast.TypeCianetoClass;
 import ast.Variable;
+import ast.Method;
 
 
 public class SymbolTable {
 	private Hashtable<String, TypeCianetoClass> classesTable;
-    private Hashtable<String, Object> methodsTable;
+    private Hashtable<String, Method> methodsTable;
     private Hashtable<String, Variable> attributesTable;
     private Hashtable<String, Variable> variablesTable;
+    private Hashtable<String, Method> metodoGlobal;
 
     public SymbolTable() {
         this.classesTable = new Hashtable<String, TypeCianetoClass>();
-        this.methodsTable = new Hashtable<String, Object>();
+        this.methodsTable = new Hashtable<String, Method>();
         this.attributesTable = new Hashtable<String, Variable>();
         this.variablesTable = new Hashtable<String, Variable>();
+        this.metodoGlobal = new Hashtable<String, Method>();
     }
 
     // Limpa tabela de variáveis locais
@@ -42,7 +45,7 @@ public class SymbolTable {
         return this.classesTable.get(chave);
     }
 
-    public Object returnMethod(String chave) {
+    public Method returnMethod(String chave) {
         return this.methodsTable.get(chave);
     }
     
@@ -54,6 +57,10 @@ public class SymbolTable {
         return this.variablesTable.get(chave);
     }
 
+    public void removeVariable(String chave) {
+        this.variablesTable.remove(chave);
+    }
+
     public void putClass(String chave, TypeCianetoClass valor) {
         this.classesTable.put(chave, valor);
     }
@@ -61,9 +68,16 @@ public class SymbolTable {
     public void removeClass(String chave) {
         this.classesTable.remove(chave);
     }
-
-    public void putMethod(String chave, Object valor) {
+    public void putMethod(String chave, Method valor) {
         this.methodsTable.put(chave, valor);
+    }
+    
+    public void putMethodGlobal(String chave, Method valor) {
+        this.metodoGlobal.put(chave, valor);
+    }
+    
+    public Object returnMethodGlobal(String chave) {
+        return this.metodoGlobal.get(chave);
     }
     
     public void putAttribute(String chave, Variable valor) {

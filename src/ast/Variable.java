@@ -4,11 +4,12 @@
 */
 package ast;
 
-public class Variable extends Type{
+public class Variable extends Expr{
     private Type type;
-
+	private String name;
+	
     public Variable(String name){
-        super(name);
+        this.name = name;
     }
     public void setType(Type type){
         this.type = type;
