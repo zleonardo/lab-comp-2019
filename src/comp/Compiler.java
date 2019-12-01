@@ -444,7 +444,10 @@ public class Compiler {
 									error("Method of the subclass has a signature different from the same method of superclass");
 								}
 							}
-							if(methodList.getVetor(i).getScope() != null && !methodList.getVetor(i).getScope().contains("override")) {
+							if(methodList.getVetor(i).getScope() != null && !method.getScope().contains("override") && !method.getScope().contains("private")) {
+								//System.out.println(methodList.getVetor(i).getScope().contains("override"));
+								//System.out.println(methodList.getVetor(i).getScope());
+								//System.out.println(method.getScope());
 								error("'override' expected before overridden method");
 							}
 						}

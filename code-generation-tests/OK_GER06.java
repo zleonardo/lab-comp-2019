@@ -13,8 +13,7 @@ class A {
 int j;
 int k;
       System.out.print(7 + " ");
-		Scanner s = new Scanner(System.in);
-i = 1;
+		i = 1;
 		j = i + 1;
 		k = j + 1;
       System.out.print(i + " ");

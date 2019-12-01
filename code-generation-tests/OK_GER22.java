@@ -12,8 +12,7 @@ class Program {
       System.out.println("100");
 		int i;
 int n;
-		Scanner s = new Scanner(System.in);
-i = 0;
+		i = 0;
 		n = 10;
 		boolean b;
 		b = false;

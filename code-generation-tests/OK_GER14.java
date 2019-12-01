@@ -10,13 +10,11 @@ class A {
 int k;
  
  int get_A () {
- return this.k();
-;
+ return this.k;
    }
  void init () {
 		Scanner s = new Scanner(System.in);
-this.k();
- = 1;
+this.k = 1;
    }
 }
 
@@ -24,14 +22,11 @@ class B extends A {
 int k;
  
  int get_B () {
- return this.k();
-;
+ return this.k;
       }
       @Override
  void init () {
-		super.init();
-		this.k();
- = 2;
+		super.init		this.k = 2;
       }
 }
 
@@ -39,14 +34,11 @@ class C extends B {
 int k;
  
  int get_C () {
- return this.k();
-;
+ return this.k;
          }
          @Override
  void init () {
-		super.init();
-		this.k();
- = 3;
+		super.init		this.k = 3;
          }
 }
 
@@ -54,14 +46,11 @@ class D extends C {
 int k;
  
  int get_D () {
- return this.k();
-;
+ return this.k;
             }
             @Override
  void init () {
-		super.init();
-		this.k();
- = 4;
+		super.init		this.k = 4;
             }
 }
 

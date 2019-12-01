@@ -13,8 +13,7 @@ class A {
    }
  void m2 (int n) {
       System.out.print(n + " ");
-		this.m1();
-   }
+		this.m1   }
 }
 
 class B extends A {

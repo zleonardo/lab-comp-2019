@@ -10,13 +10,10 @@ class A {
 int k;
  
 	public int get_A () {
- return this.k();
-;
+ return this.k;
    }
 	public void set (int k) {
-		Scanner s = new Scanner(System.in);
-this.k();
- = k;
+		this.k = k;
    }
 	public void print () {
       System.out.print(" ");
@@ -24,5 +21,30 @@ this.k();
 	public void init () {
 		this.set(0);
    }
+}
+
+class B extends A {
+int k;
+ 
+	public int get_B () {
+ return this.k;
+      }
+      @Override
+ void init () {
+		super.init		this.k = 2;
+      }
+      @Override
+ void print () {
+         System.out.print(" ");
+         System.out.print(" ");
+		super.print      }
+}
+
+class C extends A {
+ 
+         @Override
+ int get_A () {
+ return 0;
+         }
 }
 
