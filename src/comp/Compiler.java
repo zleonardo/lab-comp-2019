@@ -653,14 +653,14 @@ public class Compiler {
 					// else if (leftType == Type.nullType) TERMINAR
 					// class = subclass
 					// else{
-					else if (leftType != Type.nullType){
-						TypeCianetoClass rightClassObj = symbolTable.returnClass(rightType.getName());
-						// System.out.print(rightClassObj.getSuperClass().getName() + " " + leftType.getName()+ "\n ");
-						if(rightClassObj.getSuperClass() == null)
-							error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
-						else if(rightClassObj.getSuperClass().getName() != leftType.getName())
-							error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
-					}
+					// else if (leftType != Type.nullType){
+					// 	TypeCianetoClass rightClassObj = symbolTable.returnClass(rightType.getName());
+					// 	// System.out.print(rightClassObj.getSuperClass().getName() + " " + leftType.getName()+ "\n ");
+					// 	if(rightClassObj.getSuperClass() == null)
+					// 		error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+					// 	else if(rightClassObj.getSuperClass().getName() != leftType.getName())
+					// 		error("Type error: value of the right-hand side is not subtype of the variable of the left-hand side.");
+					// }
 				}
 			}
 		}
@@ -1172,11 +1172,15 @@ public class Compiler {
 			primaryExpr.setFirstIdName(lexer.getStringValue());
 			Variable ok = symbolTable.returnAttribute(lexer.getStringValue());
 			Variable ok1 = symbolTable.returnVariable(lexer.getStringValue());
+			Method ok2 = symbolTable.returnMethodGlobal(lexer.getStringValue());
 			if(ok != null) {
 				primaryExpr.setType(ok.getType());
 			}
 			if(ok1 != null) {
 				primaryExpr.setType(ok1.getType());
+			}
+			if(ok2 != null) {
+				primaryExpr.isMethod();
 			}
 			if(primaryExpr.getScope() == Token.SUPER) {
 			}

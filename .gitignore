@@ -4,3 +4,6 @@
 student-made-tests/.DS_Store
 report.txt
 teste
+code-generation-tests/*.class
+code-generation-tests/*.java
+code-generation-tests/.DS_Store

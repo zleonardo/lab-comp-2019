@@ -35,6 +35,8 @@ public class CompositeExpr extends Expr {
 			pw.print(" || ");
 		else if(this.oper == Token.AND)
 			pw.print(" && ");
+		else if(this.oper == Token.PLUSPLUS)
+			pw.print(" + ");
 		else
 			pw.print(" " + this.oper.toString() + " ");
 		right.genJava(pw);

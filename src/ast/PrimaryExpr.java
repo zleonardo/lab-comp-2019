@@ -9,17 +9,21 @@ import comp.SymbolTable;
 import lexer.Token;
 
 public class PrimaryExpr extends Expr {
+	private boolean isMethod = false;
 	private Token scope = null;
 	private Type type = null;
 	private String firstIdName = null, secondIdName = null;
 	private Type firstIdObj = null, secondIdObj = null;
 	private ExprList exprList = new ExprList();
-	private ObjectCreation firstObj;
+	private ObjectCreation creationObj;
 	private boolean flag = false;
-	private SymbolTable symbol = new SymbolTable();
 
 	public void setScope(Token scope){
 		this.scope = scope;
+	}
+	
+	public void isMethod(){
+		this.isMethod = true;
 	}
 
 	public Token getScope() {
@@ -47,7 +51,7 @@ public class PrimaryExpr extends Expr {
 	}
 	
 	public void setObject(ObjectCreation obj) {
-		this.firstObj = obj;
+		this.creationObj = obj;
 	}
 
 	public void setFirstIdObj(Type firstIdObj){
@@ -84,8 +88,8 @@ public class PrimaryExpr extends Expr {
 
 	public void genJava( PW pw ) {
 				
-		if(this.firstObj != null) {
-			this.firstObj.genJava(pw);
+		if(this.creationObj != null) {
+			this.creationObj.genJava(pw);
 		}
 		else if(this.firstIdName != null) {
 			if(this.scope != null) {
@@ -103,14 +107,10 @@ public class PrimaryExpr extends Expr {
 					for(int i = 0; i < this.exprList.getTamanho(); i++) {
 						this.exprList.getVetor(i).genJava(pw);
 					}
-					pw.println(");");
+					pw.print(")");
 				}else{
-					//ARRUMAR AQUI!!!
-					
-					//System.out.println(symbol.returnMethodGlobal(this.firstIdName));
-					
-					if(symbol.returnMethodGlobal(this.firstIdName) != null) {
-						pw.println(this.firstIdName + "();");
+					if(this.isMethod) {
+						pw.print(this.firstIdName + "()");
 					}else {
 						pw.print(this.firstIdName);
 					}
@@ -119,7 +119,7 @@ public class PrimaryExpr extends Expr {
 			}else {
 				pw.print(this.firstIdName);
 			}
-			//pw.println(";");
+			//pw.print(";");
 		}
 		
 		if(this.secondIdName != null) {
@@ -130,11 +130,11 @@ public class PrimaryExpr extends Expr {
 			pw.print(this.secondIdName + "(");
 			for(int i = 0; i < this.exprList.getTamanho(); i++) {
 				this.exprList.getVetor(i).genJava(pw);
-				if(i != 0 && ((i + 1) < this.exprList.getTamanho())) {
-					pw.print(" ,");
+				if((i + 1) < this.exprList.getTamanho()) {
+					pw.print(", ");
 				}
 			}
-			pw.println(");");
+			pw.print(")");
 		}
 		
 	}

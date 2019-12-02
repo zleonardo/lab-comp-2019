@@ -76,7 +76,7 @@ public class SymbolTable {
         this.metodoGlobal.put(chave, valor);
     }
     
-    public Object returnMethodGlobal(String chave) {
+    public Method returnMethodGlobal(String chave) {
         return this.metodoGlobal.get(chave);
     }
     
