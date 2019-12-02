@@ -38,10 +38,7 @@ public class Lexer {
 			if ( Character.isAlphabetic(kw.charAt(0)) )
 				keywordsTable.put( s.toString(), s);
 		}
-
-
 	}
-
 
     public void nextToken() {
         char ch;
@@ -81,7 +78,6 @@ public class Lexer {
              nextToken();
           }
           else {
-        	//System.out.println("Ch: " + ch);
             if ( Character.isLetter( ch ) ) {
                 // get an identifier or keyword
                 StringBuffer ident = new StringBuffer();
@@ -100,18 +96,15 @@ public class Lexer {
                 }
                 
                 else {
-                	//System.out.println("Ident: " + ident);
                 	stringValue = ident.toString();
                 	
                     // if identStr is in the list of keywords, it is a keyword !
                 	Token value = keywordsTable.get(stringValue);
-                	//System.out.println("Value: " + value);
                 	if ( value == null )
                 		token = Token.ID;
                 	else
                 		token = value;
                 }
-                //System.out.println("Token: " + token);
             }
             else if ( Character.isDigit( ch ) ) {
                 // get a number
@@ -303,7 +296,6 @@ public class Lexer {
 
 
     public String getCurrentLine() {
-        //return getLine(lastTokenPos);
         return getLine(tokenPos);
     }
 

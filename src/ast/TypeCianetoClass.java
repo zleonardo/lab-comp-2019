@@ -8,17 +8,10 @@ package ast;
 import java.util.ArrayList;
 
 public class TypeCianetoClass extends Type {
-	
-
 	public TypeCianetoClass( String name ) {
 		super(name);
 	}
 
-	// @Override
-	// public String getCname() {
-	//    return super.getName();
-	// }
-	
 	public String getType() {
 		return super.getName();
 	}
@@ -84,6 +77,4 @@ public class TypeCianetoClass extends Type {
 	private ArrayList<Variable> fieldList;
 	private MethodList MethodList;
 	private Boolean open;
-	// m�todos p�blicos get e set para obter e iniciar as vari�veis acima,
-	// entre outros m�todos
 }

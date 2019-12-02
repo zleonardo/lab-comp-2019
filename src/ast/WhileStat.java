@@ -23,7 +23,6 @@ public class WhileStat extends Statement{
         pw.add();
         this.whilePart.genJava(pw);
         pw.sub();
-        // pw.tab();
         pw.println("		}");
 	}
 }

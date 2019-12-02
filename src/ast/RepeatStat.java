@@ -23,7 +23,6 @@ public class RepeatStat extends Statement{
         pw.printIdent("}while(");
         this.condition.genJava(pw);
         pw.sub();
-        // pw.tab();
         pw.println(")");
 	}
 }

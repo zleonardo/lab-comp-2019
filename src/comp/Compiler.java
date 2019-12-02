@@ -90,7 +90,6 @@ public class Compiler {
 			catch( CompilerError e) {
 			}
 		}
-		//program = new Program(CianetoClassList, metaobjectCallList, compilationErrorList);
 		return program;
 	}
 
@@ -364,8 +363,6 @@ public class Compiler {
 		Method method = null;
 		Boolean flagReturn = false;
 		verificaReturn = false;
-		//metodoAtual = null;
-		
 		// le func
 		next();
 		
@@ -412,8 +409,6 @@ public class Compiler {
 			
 			
 			if ( lexer.token == Token.MINUS_GT ) {
-				// method declared a return type
-				
 				if(className.equals("Program")) {
 					if(method.getName().equals("run")) {
 						error("Method 'run' of class 'Program' with a return value type");
@@ -445,9 +440,6 @@ public class Compiler {
 								}
 							}
 							if(methodList.getVetor(i).getScope() != null && !method.getScope().contains("override") && !method.getScope().contains("private")) {
-								//System.out.println(methodList.getVetor(i).getScope().contains("override"));
-								//System.out.println(methodList.getVetor(i).getScope());
-								//System.out.println(method.getScope());
 								error("'override' expected before overridden method");
 							}
 						}
@@ -520,7 +512,6 @@ public class Compiler {
 		Variable param = new Variable(id);
 		param.setType(type);
 		//Verificar o objeto
-		// pra q isso?
 		symbolTable.putVariable(id, param);
 
 		return new ParamDec(id, type);
@@ -794,8 +785,6 @@ public class Compiler {
 		
 		Expr e = expr();
 		
-		//System.out.println(e.getType().getName());
-		
 		return new ReturnStat(e);
 	}
 
@@ -872,7 +861,6 @@ public class Compiler {
 		next();
 
 		check(Token.IDCOLON, "'print:' or 'println:' was expected after 'Out.'");
-		// precisa criar a classe Out
 		String printName = lexer.getStringValue();
 		//System.out.println(printName);
 		Out write = new Out(printName);
@@ -882,7 +870,6 @@ public class Compiler {
 		write.setExpr(expr);
 		
 		for(int i = 0; i < expr.getTamanho(); i++) {
-			//System.out.println(expr.getVetor(i));
 			if(expr.getVetor(i) == null) {
 				error("Command ' Out.print' without arguments");
 			}else if(expr.getVetor(i).getType() == Type.booleanType) {
@@ -928,18 +915,6 @@ public class Compiler {
 				next();
 				Expr right = simpleExpr();
 				
-				//System.out.println(left.getType().getName());
-				//TypeCianetoClass classe1 = left.getType().getName();
-				//System.out.println(right.getType().getName());
-				
-				//NA HORA DE COMPARAR AS CLASSES TEM QUE VER SE UMA É HERDADA DA OUTRA. TRETA!!!
-				
-				/*if(relation == Token.EQ || relation == Token.NEQ) {
-					if (left.getType().getName() != right.getType().getName()) {
-						error("Incompatible types cannot be compared with '" + relation.toString() + "' because the result will always be 'false'");
-					}
-				}*/
-				
 				// TERMINAR 
 				// sem a parte q trata os casos de 'nil' piora o relatorio
 				// if(relation == Token.EQ || relation == Token.NEQ){
@@ -955,8 +930,6 @@ public class Compiler {
 				CompositeExpr ce = new CompositeExpr(left,  relation, right);
 				ce.setType(Type.booleanType);
 				left = ce;
-
-				// semantica
 			break;
 			default:
 				//break;
@@ -1105,11 +1078,8 @@ public class Compiler {
 	}
 	
 	// objectCreation := Id "." "new"
-	// REVISAR
-	// joguei pra dentro do primary
 	private Expr objectCreation(PrimaryExpr primaryExpr){
 		// le new
-		
 		ObjectCreation obj = new ObjectCreation(primaryExpr.getFirstIdName());
 		
 		next();
@@ -1220,8 +1190,6 @@ public class Compiler {
 			
 		}
 		else{
-			//return 
-			//error("Expression expected");
 			return primaryExpr;
 		}
 
@@ -1371,7 +1339,6 @@ public class Compiler {
 	
 	// asserStat := "assert" expr "," stringvalue
 	private Statement assertStat(){
-		
 		next();
 		
 		AssertStat assertStat = new AssertStat(expr());
@@ -1387,7 +1354,6 @@ public class Compiler {
 	
 	private LiteralInt literalInt() {
 		int value = lexer.getNumberValue();
-		//System.out.println(value);
 		next();
 		return new LiteralInt(value);
 	}

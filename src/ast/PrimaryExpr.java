@@ -4,8 +4,6 @@
 */
 
 package ast;
-
-import comp.SymbolTable;
 import lexer.Token;
 
 public class PrimaryExpr extends Expr {
@@ -35,7 +33,6 @@ public class PrimaryExpr extends Expr {
 	}
 
 	public Type getType() {
-		//remover if quanto finalizado
 		if(this.type == null)
 			return Type.nullType;
 
@@ -119,7 +116,6 @@ public class PrimaryExpr extends Expr {
 			}else {
 				pw.print(this.firstIdName);
 			}
-			//pw.print(";");
 		}
 		
 		if(this.secondIdName != null) {

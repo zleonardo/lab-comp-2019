@@ -25,19 +25,6 @@ public class Out extends Statement{
 		else {
 			pw.print("println(");
 		}
-		
-		/*for(int i = 0; i < this.exprList.getTamanho(); i++) {
-			if(this.exprList.getVetor(i).getType() == Type.intType) {
-				pw.print("%d ");
-			}
-			else if(this.exprList.getVetor(i).getType() == Type.stringType){
-                pw.print("%s "); 
-            }
-		}
-		
-		pw.print("\"");
-		if(exprList.getTamanho() > 0)
-            pw.print(", ");*/
 
         for(int i = 0; i < exprList.getTamanho(); i++){
             if(i + 1 == exprList.getTamanho()){

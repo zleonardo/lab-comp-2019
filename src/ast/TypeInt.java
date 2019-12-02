@@ -11,9 +11,9 @@ public class TypeInt extends Type {
         super("int");
     }
     
-   public String getName() {
-      return "int";
-   }
+    public String getName() {
+        return "int";
+    }
 
     public void genJava(PW pw){
         pw.print("int");

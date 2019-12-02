@@ -56,8 +56,6 @@ public class Method {
 			}else {
 				pw.print("	" + this.scope);
 			}
-		}else {
-			//pw.print(" public");
 		}
 		
 		if(this.type == null) {
@@ -84,7 +82,6 @@ public class Method {
 			}
 			p.genJava(pw);
 			i++;
-		    //pw.print(" ");
 		}
 		
 		pw.println(") {");
