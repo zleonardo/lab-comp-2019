@@ -19,6 +19,5 @@ public class Field {
 
 	public void genJava(PW pw){
 		idList.genJava(pw);
-		
 	}
 }

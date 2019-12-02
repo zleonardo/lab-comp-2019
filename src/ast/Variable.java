@@ -35,6 +35,5 @@ public class Variable extends Expr{
 		}
         pw.print(" ");
         pw.print(this.getName());
-        pw.println(";");
 	}
 }

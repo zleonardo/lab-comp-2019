@@ -60,7 +60,7 @@ public class Out extends Statement{
                 }
             }
         }
-        pw.println(");");
+        pw.print(")");
     }
 
 }

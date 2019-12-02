@@ -24,6 +24,6 @@ public class RepeatStat extends Statement{
         this.condition.genJava(pw);
         pw.sub();
         // pw.tab();
-        pw.println(");");
+        pw.println(")");
 	}
 }

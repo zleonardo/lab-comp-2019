@@ -14,6 +14,5 @@ public class ReturnStat extends Statement{
     public void genJava(PW pw){
     	pw.print(" return ");
         this.expr.genJava(pw);
-        pw.println(";");
 	}
 }

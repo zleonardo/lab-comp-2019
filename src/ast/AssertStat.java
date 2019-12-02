@@ -23,6 +23,5 @@ public class AssertStat extends Statement{
         	pw.print("): ");
             this.string.genJava(pw);
         }
-        pw.println(";");
 	}
 }

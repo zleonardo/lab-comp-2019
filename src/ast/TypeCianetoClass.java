@@ -67,9 +67,9 @@ public class TypeCianetoClass extends Type {
 		pw.println(" {");
 		
 		for( Variable list : this.fieldList ){
-			
             list.genJava(pw);
-        }
+			pw.println(";");
+	}
 		
 		if(MethodList != null) {
 			pw.add();

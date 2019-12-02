@@ -6,7 +6,6 @@ package ast;
 
 public class AssignExpr extends Statement{
     private Expr left, right = null;
-    private static Boolean flag = true;
 
     public AssignExpr(){
         this.left = null;
@@ -15,11 +14,6 @@ public class AssignExpr extends Statement{
     public AssignExpr(Expr left){
         this.left = left;
     }
-
-    // public AssignExpr(Expr left, Expr right){
-    //     this.left = left;
-    //     this.right = right;
-    // }
 
     public Expr getLeft(){
         return this.left;
@@ -39,24 +33,12 @@ public class AssignExpr extends Statement{
 
     public void genJava(PW pw){
     	
-    	pw.print("		");
-    	
-    	if(this.right != null) {
-    		if(this.right.getType().name == "int" || this.right.getType().name == "string") {
-        		if(flag) {
-        			//System.out.println(flag);
-        			pw.println("Scanner s = new Scanner(System.in);");
-        			//pw.println("BufferedReader s = new BufferedReader(new InputStreamReader(System.in));");
-        			flag = false;
-        		}
-        	}
-    	}
+        pw.print("		");
     	
         this.left.genJava(pw);
         if(this.right != null) {
         	 pw.print(" = ");
              this.right.genJava(pw);
-             pw.println(";");
         }
 	}
 }

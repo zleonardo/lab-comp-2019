@@ -20,6 +20,7 @@ public class StatementList{
     public void genJava(PW pw){
         for( Statement stat : this.statList ){
             stat.genJava(pw);
+            pw.println(";");
         }
 	}
 }
